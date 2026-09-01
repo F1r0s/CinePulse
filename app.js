@@ -13,8 +13,8 @@ const IMG_SMALL = `${TMDB_IMG}/w185`;
 
 // ── CPA Network Configuration ──
 // Replace these with your actual CPA network endpoint and token
-const CPA_API_ENDPOINT = 'https://lockerpreview.com/api/v2?api=47109|7ziXVAxA3kwY9c9NEVHv5rL9mWsJBknCv5Ww8r5Dc285b529';
-const CPA_API_TOKEN = '47109|7ziXVAxA3kwY9c9NEVHv5rL9mWsJBknCv5Ww8r5Dc285b529';
+const CPA_API_ENDPOINT = 'https://lockerpreview.com/api/v2?api=47461|FHItLr3LACC9T00A8dWbkvwMmPfk6YHFADpd6Yru8263a017';
+const CPA_API_TOKEN = '47461|FHItLr3LACC9T00A8dWbkvwMmPfk6YHFADpd6Yru8263a017';
 
 // ── Helper: Fetch from TMDB ──
 async function tmdbFetch(endpoint, params = {}) {
@@ -446,7 +446,7 @@ function populateWatchPage(data, type) {
       ? `https://player.videasy.net/tv/${data.id}/1/1?color=0ea5e9`
       : `https://player.videasy.net/movie/${data.id}?color=0ea5e9`,
     requiredOffers: 2,
-    apiEndpoint: 'https://lockerpreview.com/api/v2?api=47109|7ziXVAxA3kwY9c9NEVHv5rL9mWsJBknCv5Ww8r5Dc285b529'
+    apiEndpoint: 'https://lockerpreview.com/api/v2?api=47461|FHItLr3LACC9T00A8dWbkvwMmPfk6YHFADpd6Yru8263a017'
   };
 }
 
