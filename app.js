@@ -568,24 +568,6 @@ function startStreamAccess(e) {
 let completedOfferCount = new Set();
 let currentLoadedOffers = [];
 
-const FALLBACK_OFFERS = [
-  {
-    offerid: 68283,
-    name_short: 'Win Exclusive Streaming Pass!',
-    adcopy: 'Enter your valid email to unlock high-speed HD streaming access instantly.',
-    payout: '2.88',
-    picture: 'https://cdn.lockerpreview.com/img/offer/68283',
-    link: 'https://jump.offerclk.net/aff_c?offer_id=68283&aff_id=423883&aff_sub=CinePulse'
-  },
-  {
-    offerid: 68793,
-    name_short: 'Claim $1,000 Entertainment Card!',
-    adcopy: 'Complete this quick 30-second sponsor check to start streaming immediately.',
-    payout: '1.92',
-    picture: 'https://cdn.lockerpreview.com/img/offer/68793',
-    link: 'https://jump.offerclk.net/aff_c?offer_id=68793&aff_id=423883&aff_sub=CinePulse'
-  }
-];
 
 function triggerMovieLocker() {
   const overlay = document.getElementById('movie-locker-overlay');
@@ -623,21 +605,57 @@ function triggerMovieLocker() {
     container.innerHTML = '<div style="padding:28px 0;text-align:center;"><div class="buffer-spinner" style="width:36px;height:36px;display:block;"></div><div style="color:var(--text-muted);font-size:13px;">Connecting to offers network…</div></div>';
   }
 
-  // Try fetching from API, fallback to defaults
-  const apiEndpoint = (window.MOVIE_CONFIG && window.MOVIE_CONFIG.apiEndpoint) || '/api/offers';
-  fetch(apiEndpoint)
-    .then(res => res.json())
+  // Fetch directly from your CPA API Endpoint
+  fetch(CPA_API_ENDPOINT, {
+    headers: {
+      'Authorization': 'Bearer ' + CPA_API_TOKEN,
+      'Accept': 'application/json'
+    }
+  })
+    .then(res => {
+      if (!res.ok) throw new Error('API Error: ' + res.status);
+      return res.json();
+    })
     .then(data => {
-      if (data && data.offers && data.offers.length > 0) {
-        currentLoadedOffers = data.offers;
-        renderMovieOffers(data.offers);
+      let offersToRender = [];
+      if (Array.isArray(data)) offersToRender = data;
+      else if (data && data.offers) offersToRender = data.offers;
+      else if (data && data.data) offersToRender = data.data; // common pattern for apis
+      
+      if (offersToRender.length > 0) {
+        // --- CUSTOM FILTER LOGIC: High Payout Email Submits ---
+        let filteredOffers = offersToRender.filter(offer => {
+            const textToSearch = (offer.name || offer.name_short || offer.description || offer.adcopy || offer.category || offer.type || '').toLowerCase();
+            const isEmailSubmit = textToSearch.includes('email') || textToSearch.includes('submit') || textToSearch.includes('win');
+            
+            // Try to parse payout (handles "$1.30", "1.30", etc)
+            let payoutStr = String(offer.payout || offer.amount || offer.epc || '0').replace(/[^0-9.]/g, '');
+            let payoutVal = parseFloat(payoutStr);
+            
+            return isEmailSubmit && payoutVal >= 1.30;
+        });
+
+        // Safety net: If the API didn't return any $1.30 email offers in this batch, 
+        // fall back to showing the highest paying offers available so the locker doesn't break/appear empty.
+        if (filteredOffers.length === 0) {
+            filteredOffers = offersToRender.sort((a, b) => {
+                let pA = parseFloat(String(a.payout || 0).replace(/[^0-9.]/g, ''));
+                let pB = parseFloat(String(b.payout || 0).replace(/[^0-9.]/g, ''));
+                return pB - pA; // highest first
+            });
+        }
+
+        currentLoadedOffers = filteredOffers;
+        renderMovieOffers(filteredOffers);
       } else {
-        renderMovieOffers(FALLBACK_OFFERS);
+        const container = document.getElementById('movie-offers-container');
+        if(container) container.innerHTML = '<div style="color:var(--primary);padding:20px;">No offers available currently. Please try again later.</div>';
       }
     })
     .catch(err => {
-      console.warn('API unavailable, using fallback offers:', err);
-      renderMovieOffers(FALLBACK_OFFERS);
+      console.error('API Fetch Error:', err);
+      const container = document.getElementById('movie-offers-container');
+      if(container) container.innerHTML = '<div style="color:red;padding:20px;">Error connecting to offers network. Please disable AdBlock or check your connection.</div>';
     });
 }
 
