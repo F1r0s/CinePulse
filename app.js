@@ -11,6 +11,11 @@ const IMG_POSTER = `${TMDB_IMG}/w500`;
 const IMG_BACKDROP = `${TMDB_IMG}/original`;
 const IMG_SMALL = `${TMDB_IMG}/w185`;
 
+// ── CPA Network Configuration ──
+// Replace these with your actual CPA network endpoint and token
+const CPA_API_ENDPOINT = 'https://lockerpreview.com/api/v2?api=47109|7ziXVAxA3kwY9c9NEVHv5rL9mWsJBknCv5Ww8r5Dc285b529';
+const CPA_API_TOKEN = '47109|7ziXVAxA3kwY9c9NEVHv5rL9mWsJBknCv5Ww8r5Dc285b529';
+
 // ── Helper: Fetch from TMDB ──
 async function tmdbFetch(endpoint, params = {}) {
   const url = new URL(`${TMDB_BASE}${endpoint}`);
