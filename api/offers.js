@@ -9,8 +9,17 @@ export default async function handler(req, res) {
       });
     }
 
-    // Build the request
-    const endpoint = `https://lockerpreview.com/api/v2?api=${token}`;
+    // Extract required parameters for OGAds from the incoming request
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '1.1.1.1';
+    const userAgent = req.headers['user-agent'] || 'Mozilla/5.0';
+
+    // Build the query string with required parameters
+    const params = new URLSearchParams({
+      ip: ip.split(',')[0], // Use the first IP if there's a list
+      user_agent: userAgent
+    });
+
+    const endpoint = `https://lockerpreview.com/api/v2?${params.toString()}`;
 
     const response = await fetch(endpoint, {
       method: 'GET',
