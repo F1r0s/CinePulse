@@ -12,9 +12,9 @@ const IMG_BACKDROP = `${TMDB_IMG}/original`;
 const IMG_SMALL = `${TMDB_IMG}/w185`;
 
 // ── CPA Network Configuration ──
-// Replace these with your actual CPA network endpoint and token
-const CPA_API_ENDPOINT = 'https://lockerpreview.com/api/v2?api=47461|FHItLr3LACC9T00A8dWbkvwMmPfk6YHFADpd6Yru8263a017';
-const CPA_API_TOKEN = '47461|FHItLr3LACC9T00A8dWbkvwMmPfk6YHFADpd6Yru8263a017';
+// The frontend now securely fetches from your Vercel Serverless API.
+// You MUST add CPA_API_TOKEN in your Vercel Environment Variables.
+const CPA_API_ENDPOINT = '/api/offers';
 
 // ── Helper: Fetch from TMDB ──
 async function tmdbFetch(endpoint, params = {}) {
@@ -446,7 +446,7 @@ function populateWatchPage(data, type) {
       ? `https://player.videasy.net/tv/${data.id}/1/1?color=0ea5e9`
       : `https://player.videasy.net/movie/${data.id}?color=0ea5e9`,
     requiredOffers: 2,
-    apiEndpoint: 'https://lockerpreview.com/api/v2?api=47461|FHItLr3LACC9T00A8dWbkvwMmPfk6YHFADpd6Yru8263a017'
+    apiEndpoint: '/api/offers'
   };
 }
 
@@ -610,10 +610,9 @@ function triggerMovieLocker() {
     container.innerHTML = '<div style="padding:28px 0;text-align:center;"><div class="buffer-spinner" style="width:36px;height:36px;display:block;"></div><div style="color:var(--text-muted);font-size:13px;">Connecting to offers network…</div></div>';
   }
 
-  // Fetch directly from your CPA API Endpoint
+  // Fetch securely through our Vercel Serverless API (bypasses AdBlockers and CORS)
   fetch(CPA_API_ENDPOINT, {
     headers: {
-      'Authorization': 'Bearer ' + CPA_API_TOKEN,
       'Accept': 'application/json'
     }
   })

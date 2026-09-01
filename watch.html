@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -294,23 +294,23 @@
       background: #111;
       color: #fff;
     }
-    .custom-fs-btn {
-      background: rgba(0,0,0,0.7);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.2);
-      width: 38px;
-      height: 38px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      cursor: pointer;
-      backdrop-filter: blur(8px);
-      transition: all 0.2s;
-    }
-    .custom-fs-btn:hover, .custom-server-select:hover {
+    .custom-server-select:hover {
       background: rgba(255,255,255,0.2);
+    }
+    
+    @media (max-width: 768px) {
+      .watch-modal-header {
+        padding: 12px 16px;
+      }
+      .watch-close-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+      }
+      .custom-server-select {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
     }
 
   
@@ -629,7 +629,6 @@
             <option value="2">Server 2 (Alt)</option>
             <option value="3">Server 3 (Backup)</option>
           </select>
-          <button class="custom-fs-btn" onclick="toggleFullScreen()" title="Fullscreen">⛶</button>
         </div>
       </div>
       <div class="watch-video-wrap" id="watch-video-wrap"></div>
@@ -698,7 +697,7 @@
     var wrap=document.getElementById('watch-video-wrap');
     var wmt = document.getElementById('watch-modal-title'); if(wmt) wmt.textContent=title||'Now Streaming';
     document.querySelectorAll('.server-tab').forEach(function(t,i){t.classList.toggle('active',i===0);});
-    wrap.innerHTML='<iframe src="'+buildStreamUrl(currentMediaId,currentMediaType,1)+'" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen"></iframe>';
+    wrap.innerHTML='<iframe src="'+buildStreamUrl(currentMediaId,currentMediaType,1)+'" frameborder="0" border="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>';
     modal.classList.add('active');document.body.style.overflow='hidden';
 
     // Locker Logic
@@ -717,7 +716,7 @@
 
   
   function switchServer(num){
-    document.getElementById('watch-video-wrap').innerHTML='<iframe src="'+buildStreamUrl(currentMediaId,currentMediaType,parseInt(num))+'" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen"></iframe>';
+    document.getElementById('watch-video-wrap').innerHTML='<iframe src="'+buildStreamUrl(currentMediaId,currentMediaType,parseInt(num))+'" frameborder="0" border="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>';
   }
   
   function toggleFullScreen() {
