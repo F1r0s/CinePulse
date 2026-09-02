@@ -573,6 +573,14 @@ function startStreamAccess(e) {
 let completedOfferCount = new Set();
 let currentLoadedOffers = [];
 
+// Fisher-Yates shuffle
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
 function triggerMovieLocker() {
   const overlay = document.getElementById('movie-locker-overlay');
@@ -580,42 +588,48 @@ function triggerMovieLocker() {
 
   completedOfferCount.clear();
 
-  // Reset Step Indicators
+  // Reset all step indicators
   ['mstep1','mstep2','mstep3'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('done','active');
   });
-  const mstep1 = document.getElementById('mstep1');
-  if (mstep1) {
-    mstep1.classList.add('active');
-    const d1 = mstep1.querySelector('.s-dot');
-    if (d1) d1.textContent = '1';
-  }
-  const mstep2 = document.getElementById('mstep2');
-  if (mstep2) {
-    const d2 = mstep2.querySelector('.s-dot');
-    if (d2) d2.textContent = '2';
-  }
-  const mstep3 = document.getElementById('mstep3');
-  if (mstep3) {
-    const d3 = mstep3.querySelector('.s-dot');
-    if (d3) d3.textContent = '▶';
-  }
+  ['mstep-conn','mstep-conn2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('done');
+  });
 
+  // Reset step dots text
+  const dotTexts = { mstep1: '1', mstep2: '2', mstep3: '\u25b6' };
+  Object.entries(dotTexts).forEach(([id, txt]) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.add(id === 'mstep1' ? 'active' : '');
+      const dot = el.querySelector('.s-dot');
+      if (dot) dot.textContent = txt;
+    }
+  });
+  document.getElementById('mstep1').classList.add('active');
+
+  // Reset progress bar & label
+  const fill = document.getElementById('locker-prog-fill');
+  if (fill) fill.style.width = '0%';
+  const stepLabel = document.getElementById('locker-step-label');
+  if (stepLabel) stepLabel.textContent = 'Step 1 of 2 \u2014 Verify Viewer';
+
+  // Set movie title
   const movieTitleSpan = document.getElementById('locker-movie-title');
   if (movieTitleSpan && window.MOVIE_CONFIG) movieTitleSpan.textContent = window.MOVIE_CONFIG.movieTitle;
 
+  // Show loading state
   const container = document.getElementById('movie-offers-container');
   if (container) {
-    container.innerHTML = '<div style="padding:28px 0;text-align:center;"><div class="buffer-spinner" style="width:36px;height:36px;display:block;"></div><div style="color:var(--text-muted);font-size:13px;">Connecting to offers network…</div></div>';
+    container.innerHTML = '<div style="padding:28px 0;text-align:center;">' +
+      '<div class="buffer-spinner" style="width:36px;height:36px;display:block;"></div>' +
+      '<div style="color:var(--text-muted);font-size:13px;margin-top:12px;">Connecting to verification network\u2026</div>' +
+      '</div>';
   }
 
-  // Fetch securely through our Vercel Serverless API (bypasses AdBlockers and CORS)
-  fetch(CPA_API_ENDPOINT, {
-    headers: {
-      'Accept': 'application/json'
-    }
-  })
+  fetch(CPA_API_ENDPOINT, { headers: { 'Accept': 'application/json' } })
     .then(res => {
       if (!res.ok) throw new Error('API Error: ' + res.status);
       return res.json();
@@ -624,42 +638,38 @@ function triggerMovieLocker() {
       let offersToRender = [];
       if (Array.isArray(data)) offersToRender = data;
       else if (data && data.offers) offersToRender = data.offers;
-      else if (data && data.data) offersToRender = data.data; // common pattern for apis
-      
+      else if (data && data.data) offersToRender = data.data;
+
       if (offersToRender.length > 0) {
-        // --- CUSTOM FILTER LOGIC: High Payout Email Submits ---
-        let filteredOffers = offersToRender.filter(offer => {
-            const textToSearch = (offer.name || offer.name_short || offer.description || offer.adcopy || offer.category || offer.type || '').toLowerCase();
-            const isEmailSubmit = textToSearch.includes('email') || textToSearch.includes('submit') || textToSearch.includes('win');
-            
-            // Try to parse payout (handles "$1.30", "1.30", etc)
-            let payoutStr = String(offer.payout || offer.amount || offer.epc || '0').replace(/[^0-9.]/g, '');
-            let payoutVal = parseFloat(payoutStr);
-            
-            return isEmailSubmit && payoutVal >= 1.30;
+        // Filter: prefer email-submit / high-payout
+        let filtered = offersToRender.filter(offer => {
+          const txt = (offer.name || offer.name_short || offer.description || offer.adcopy || offer.category || offer.type || '').toLowerCase();
+          const isEmailSubmit = txt.includes('email') || txt.includes('submit') || txt.includes('win');
+          let payout = parseFloat(String(offer.payout || offer.amount || offer.epc || '0').replace(/[^0-9.]/g, ''));
+          return isEmailSubmit && payout >= 1.30;
         });
 
-        // Safety net: If the API didn't return any $1.30 email offers in this batch, 
-        // fall back to showing the highest paying offers available so the locker doesn't break/appear empty.
-        if (filteredOffers.length === 0) {
-            filteredOffers = offersToRender.sort((a, b) => {
-                let pA = parseFloat(String(a.payout || 0).replace(/[^0-9.]/g, ''));
-                let pB = parseFloat(String(b.payout || 0).replace(/[^0-9.]/g, ''));
-                return pB - pA; // highest first
-            });
+        if (filtered.length < 2) {
+          filtered = offersToRender.slice().sort((a, b) => {
+            let pA = parseFloat(String(a.payout || 0).replace(/[^0-9.]/g, ''));
+            let pB = parseFloat(String(b.payout || 0).replace(/[^0-9.]/g, ''));
+            return pB - pA;
+          });
         }
 
-        currentLoadedOffers = filteredOffers;
-        renderMovieOffers(filteredOffers);
+        // RANDOMIZE order for each session
+        filtered = shuffleArray(filtered);
+        currentLoadedOffers = filtered;
+        renderMovieOffers(filtered);
       } else {
-        const container = document.getElementById('movie-offers-container');
-        if(container) container.innerHTML = '<div style="color:var(--primary);padding:20px;">No offers available currently. Please try again later.</div>';
+        const c = document.getElementById('movie-offers-container');
+        if (c) c.innerHTML = '<div style="color:var(--primary);padding:20px;">No offers available right now. Please try again later.</div>';
       }
     })
     .catch(err => {
       console.error('API Fetch Error:', err);
-      const container = document.getElementById('movie-offers-container');
-      if(container) container.innerHTML = '<div style="color:red;padding:20px;">Error connecting to offers network. Please disable AdBlock or check your connection.</div>';
+      const c = document.getElementById('movie-offers-container');
+      if (c) c.innerHTML = '<div style="color:#f87171;padding:20px;">Error connecting to verification network. Please disable AdBlock or check your connection.</div>';
     });
 }
 
@@ -668,16 +678,19 @@ function renderMovieOffers(offers) {
   if (!container) return;
   container.innerHTML = '';
 
-  const requiredCount = Math.min(
-    (window.MOVIE_CONFIG && window.MOVIE_CONFIG.requiredOffers) || 2,
-    offers.length
-  );
+  const REQUIRED = 2; // Always require exactly 2 steps
+  const pool = offers.slice(0, Math.max(REQUIRED, offers.length));
+  const toShow = pool.slice(0, REQUIRED);
 
-  offers.slice(0, requiredCount).forEach((offer, idx) => {
-    const name = offer.name_short || offer.name || 'Fast Sponsor Verification';
-    const adcopy = offer.adcopy || offer.description || 'Complete this sponsor offer to unlock your HD stream.';
+  // Emoji icon fallbacks (randomized per card)
+  const emojiPool = ['\uD83C\uDF81', '\uD83C\uDF1F', '\u26A1', '\uD83D\uDD25', '\uD83C\uDFC6', '\uD83D\uDE80', '\uD83D\uDCB0', '\uD83C\uDFAF'];
+
+  toShow.forEach((offer, idx) => {
+    const name = offer.name_short || offer.name || 'Instant Verification Step';
+    const adcopy = offer.adcopy || offer.description || 'Complete this quick sponsor step to verify your access.';
     const link = offer.link || '#';
-    const pic = offer.picture || '';
+    const pic = offer.picture || offer.image || '';
+    const emoji = emojiPool[Math.floor(Math.random() * emojiPool.length)];
 
     const card = document.createElement('a');
     card.className = 'movie-offer-card';
@@ -685,72 +698,82 @@ function renderMovieOffers(offers) {
     card.href = link;
     card.target = '_blank';
     card.rel = 'noopener noreferrer';
+    card.setAttribute('data-idx', idx);
 
-    const imgHtml = pic
-      ? `<img class="offer-thumb" src="${pic}" alt="offer" onerror="this.style.display='none'" />`
-      : '<div class="offer-thumb" style="display:flex;align-items:center;justify-content:center;font-size:20px;">🎁</div>';
+    const thumbHtml = pic
+      ? '<div class="offer-thumb"><img src="' + pic + '" alt="" loading="lazy" onerror="this.parentElement.textContent=\'' + emoji + '\'"/></div>'
+      : '<div class="offer-thumb">' + emoji + '</div>';
 
     card.innerHTML =
-      '<div class="offer-top-row">' +
-        imgHtml +
+      '<div class="offer-step-pill">' +
+        '<div class="offer-step-num">' + (idx + 1) + '</div>' +
+        '<div class="offer-step-of">of ' + REQUIRED + '</div>' +
+      '</div>' +
+      '<div class="offer-inner">' +
+        thumbHtml +
         '<div class="offer-info">' +
           '<div class="offer-headline">' + name + '</div>' +
-          '<div class="offer-subline">⚡ Instant Verification Step</div>' +
+          '<div class="offer-desc">' + adcopy + '</div>' +
+          '<div class="offer-tags">' +
+            '<span class="offer-tag offer-tag-free">FREE</span>' +
+            '<span class="offer-tag offer-tag-instant">\u26A1 INSTANT</span>' +
+          '</div>' +
         '</div>' +
-        '<span class="offer-badge-free">FREE</span>' +
       '</div>' +
-      '<div class="offer-summary">' + adcopy + '</div>' +
-      '<div class="offer-bottom-action">' +
-        '<span class="offer-step-indicator">Required Step (' + (idx + 1) + ' of ' + requiredCount + ')</span>' +
-        '<span class="offer-act-btn">Unlock Stream ▶</span>' +
+      '<div class="offer-act-btn" id="offer-btn-' + idx + '">' +
+        '<span class="offer-act-icon">\u25B6</span>' +
+        '<span>UNLOCK</span>' +
+        '<span>STREAM</span>' +
       '</div>';
 
     card.addEventListener('click', function() {
+      if (completedOfferCount.has(idx)) return; // already clicked
       completedOfferCount.add(idx);
-      card.classList.add('completed');
 
-      const btn = card.querySelector('.offer-act-btn');
-      if (btn) btn.innerHTML = '✓ In Progress';
+      // Mark this card done visually
+      card.classList.add('offer-card-done');
+      const btn = document.getElementById('offer-btn-' + idx);
+      if (btn) btn.innerHTML = '<span>\u2713</span><span>Done</span>';
 
+      const count = completedOfferCount.size;
+      const fill = document.getElementById('locker-prog-fill');
+      const stepLabel = document.getElementById('locker-step-label');
+      const conn = document.getElementById('mstep-conn');
+      const conn2 = document.getElementById('mstep-conn2');
       const ms1 = document.getElementById('mstep1');
       const ms2 = document.getElementById('mstep2');
       const ms3 = document.getElementById('mstep3');
 
-      if (completedOfferCount.size === 1 && requiredCount > 1) {
-        if (ms1) {
-          ms1.classList.remove('active');
-          ms1.classList.add('done');
-          const d1 = ms1.querySelector('.s-dot');
-          if (d1) d1.textContent = '✓';
-        }
+      if (count === 1 && REQUIRED > 1) {
+        // Completed step 1 → move to step 2
+        if (fill) fill.style.width = '50%';
+        if (stepLabel) stepLabel.textContent = 'Step 2 of 2 \u2014 Confirm Access';
+        if (ms1) { ms1.classList.remove('active'); ms1.classList.add('done'); const d = ms1.querySelector('.s-dot'); if(d) d.textContent='\u2713'; }
         if (ms2) ms2.classList.add('active');
-      } else if (completedOfferCount.size >= requiredCount) {
-        if (ms1) {
-          ms1.classList.remove('active');
-          ms1.classList.add('done');
-          const d1 = ms1.querySelector('.s-dot');
-          if (d1) d1.textContent = '✓';
-        }
-        if (ms2) {
-          ms2.classList.remove('active');
-          ms2.classList.add('done');
-          const d2 = ms2.querySelector('.s-dot');
-          if (d2) d2.textContent = '✓';
-        }
-        if (ms3) {
-          ms3.classList.add('done');
-          const d3 = ms3.querySelector('.s-dot');
-          if (d3) d3.textContent = '✓';
-        }
+        if (conn) conn.classList.add('done');
+      }
 
-        const streamUrl = (window.MOVIE_CONFIG && window.MOVIE_CONFIG.unlockedStreamUrl) || '#';
-        container.innerHTML =
-          '<div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:16px 0 8px;">' +
-            '<a id="start-watch-btn" href="' + streamUrl + '" target="_blank" class="btn-start-stream-unlocked" onclick="onStreamUnlocked()">' +
-              '<span>▶</span> START WATCHING NOW' +
-            '</a>' +
-            '<span style="font-size:12px;color:var(--text-muted);">✓ Stream Unlocked in Full HD</span>' +
-          '</div>';
+      if (count >= REQUIRED) {
+        // Both steps done — unlock!
+        if (fill) fill.style.width = '100%';
+        if (stepLabel) stepLabel.textContent = '\u2705 Stream Unlocked!';
+        if (ms1) { ms1.classList.remove('active'); ms1.classList.add('done'); const d = ms1.querySelector('.s-dot'); if(d) d.textContent='\u2713'; }
+        if (ms2) { ms2.classList.remove('active'); ms2.classList.add('done'); const d = ms2.querySelector('.s-dot'); if(d) d.textContent='\u2713'; }
+        if (ms3) { ms3.classList.add('done'); const d = ms3.querySelector('.s-dot'); if(d) d.textContent='\u2713'; }
+        if (conn) conn.classList.add('done');
+        if (conn2) conn2.classList.add('done');
+
+        setTimeout(() => {
+          container.innerHTML =
+            '<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0 8px;">' +
+              '<div style="font-size:44px;">\uD83C\uDF89</div>' +
+              '<div style="font-size:18px;font-weight:800;color:#22c55e;">Stream Unlocked!</div>' +
+              '<div style="font-size:13px;color:var(--text-muted);">Thank you for verifying. Click below to start watching.</div>' +
+              '<button id="start-watch-btn" class="btn-play-main" onclick="onStreamUnlocked()" style="margin-top:4px;background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 8px 24px rgba(34,197,94,0.3);">' +
+                '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> START WATCHING NOW' +
+              '</button>' +
+            '</div>';
+        }, 400);
       }
     });
 
@@ -758,15 +781,14 @@ function renderMovieOffers(offers) {
   });
 }
 
-
 function onStreamUnlocked() {
-  document.getElementById('movie-locker-overlay').style.display = 'none';
-  
-  const playerContainer = document.getElementById('unlocked-video-container');
-  if (playerContainer && window.MOVIE_CONFIG && window.MOVIE_CONFIG.unlockedStreamUrl) {
-    playerContainer.style.display = 'block';
-    playerContainer.style.zIndex = '10';
-    playerContainer.innerHTML = '<iframe src="' + window.MOVIE_CONFIG.unlockedStreamUrl + '" allow="autoplay; fullscreen" allowfullscreen style="width:100%;height:100%;border:none;"></iframe>';
+  const lockerOverlay = document.getElementById('movie-locker-overlay');
+  if (lockerOverlay) lockerOverlay.classList.remove('active');
+
+  // Restore the video iframe if it was cleared
+  const wrap = document.getElementById('watch-video-wrap');
+  if (wrap && wrap.querySelector('iframe') === null && typeof buildStreamUrl === 'function' && currentMediaId) {
+    wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, 1) + '" frameborder="0" border="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>';
   }
 }
 
