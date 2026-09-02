@@ -19,7 +19,7 @@ export default async function handler(req, res) {
       user_agent: userAgent
     });
 
-    const endpoint = `https://lockerpreview.com/api/v2?${params.toString()}`;
+    const endpoint = `https://appsave.store/api/v2?${params.toString()}`;
 
     const response = await fetch(endpoint, {
       method: 'GET',

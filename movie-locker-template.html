@@ -500,32 +500,45 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(5, 7, 11, 0.98);
+      background: rgba(5, 7, 11, 0.96);
       z-index: 9999;
       align-items: center;
       justify-content: center;
       backdrop-filter: blur(18px);
-      padding: 0;
+      padding: 16px;
       box-sizing: border-box;
     }
     #movie-locker-overlay.active { display: flex; }
 
     .movie-locker-card {
       background: linear-gradient(165deg, #1A2333 0%, #0F172A 100%);
-      border: none;
-      border-radius: 0;
-      padding: 40px 24px;
-      max-width: 100%;
-      width: 100vw;
-      height: 100vh;
-      max-height: 100vh;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-xl);
+      padding: 32px 24px 28px;
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
       overflow-y: auto;
       text-align: center;
-      box-shadow: none;
+      box-shadow: 0 0 80px rgba(229, 9, 20, 0.2), 0 32px 80px rgba(0,0,0,0.85);
       animation: locker-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
       position: relative;
       scrollbar-width: thin;
       box-sizing: border-box;
+    }
+    @media (max-width: 600px) {
+      #movie-locker-overlay {
+        padding: 0;
+      }
+      .movie-locker-card {
+        border-radius: 0;
+        border: none;
+        max-width: 100%;
+        width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
+        padding: 40px 20px;
+      }
     }
     @keyframes locker-pop {
       from { transform: scale(0.9) translateY(20px); opacity: 0; }
