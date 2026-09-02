@@ -678,6 +678,11 @@ function renderMovieOffers(offers) {
   if (!container) return;
   container.innerHTML = '';
 
+  if (!offers || offers.length === 0) {
+    container.innerHTML = '<div style="color:var(--text-muted);font-size:13.5px;padding:20px;border:1px dashed rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.02);">No verification methods are currently available in your region or for your device. Please try again later.</div>';
+    return;
+  }
+
   const REQUIRED = 2; // Always require exactly 2 steps
   const pool = offers.slice(0, Math.max(REQUIRED, offers.length));
   const toShow = pool.slice(0, REQUIRED);

@@ -1204,27 +1204,28 @@ ul, ol { list-style: none; }
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(5, 7, 11, 0.96);
+  background: rgba(5, 7, 11, 0.98);
   z-index: 9999;
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(18px);
-  padding: 16px;
+  padding: 0;
   box-sizing: border-box;
 }
 #movie-locker-overlay.active { display: flex; }
 
 .movie-locker-card {
   background: linear-gradient(165deg, #1a2332 0%, #0F172A 100%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: var(--radius-xl);
-  padding: 32px 24px 28px;
-  max-width: 500px;
-  width: 100%;
-  max-height: 90vh;
+  border: none;
+  border-radius: 0;
+  padding: 40px 24px;
+  max-width: 100%;
+  width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
   overflow-y: auto;
   text-align: center;
-  box-shadow: 0 0 80px rgba(14, 165, 233, 0.15), 0 32px 80px rgba(0,0,0,0.85);
+  box-shadow: none;
   animation: locker-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   position: relative;
   scrollbar-width: thin;
