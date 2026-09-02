@@ -702,7 +702,7 @@ function renderMovieOffers(offers) {
     card.id = 'movie-offer-' + idx;
     card.href = link;
     card.target = '_blank';
-    card.rel = 'noopener noreferrer';
+    card.rel = 'noopener';
     card.setAttribute('data-idx', idx);
 
     const thumbHtml = pic
@@ -732,53 +732,43 @@ function renderMovieOffers(offers) {
       '</div>';
 
     card.addEventListener('click', function() {
-      if (completedOfferCount.has(idx)) return; // already clicked
-      completedOfferCount.add(idx);
-
-      // Mark this card done visually
-      card.classList.add('offer-card-done');
+      // Mark this card as started visually
+      card.classList.add('offer-card-started');
       const btn = document.getElementById('offer-btn-' + idx);
-      if (btn) btn.innerHTML = '<span>\u2713</span><span>Done</span>';
-
-      const count = completedOfferCount.size;
-      const fill = document.getElementById('locker-prog-fill');
+      if (btn) btn.innerHTML = '<div class="buffer-spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:6px;border-top-color:#FFF;border-right-color:rgba(255,255,255,0.2);border-bottom-color:rgba(255,255,255,0.2);border-left-color:rgba(255,255,255,0.2);"></div><span>Waiting...</span>';
+      
       const stepLabel = document.getElementById('locker-step-label');
-      const conn = document.getElementById('mstep-conn');
-      const conn2 = document.getElementById('mstep-conn2');
-      const ms1 = document.getElementById('mstep1');
-      const ms2 = document.getElementById('mstep2');
-      const ms3 = document.getElementById('mstep3');
+      if (stepLabel) stepLabel.textContent = 'Waiting for Verification...';
 
-      if (count === 1 && REQUIRED > 1) {
-        // Completed step 1 → move to step 2
-        if (fill) fill.style.width = '50%';
-        if (stepLabel) stepLabel.textContent = 'Step 2 of 2 \u2014 Confirm Access';
-        if (ms1) { ms1.classList.remove('active'); ms1.classList.add('done'); const d = ms1.querySelector('.s-dot'); if(d) d.textContent='\u2713'; }
-        if (ms2) ms2.classList.add('active');
-        if (conn) conn.classList.add('done');
-      }
-
-      if (count >= REQUIRED) {
-        // Both steps done — unlock!
-        if (fill) fill.style.width = '100%';
-        if (stepLabel) stepLabel.textContent = '\u2705 Stream Unlocked!';
-        if (ms1) { ms1.classList.remove('active'); ms1.classList.add('done'); const d = ms1.querySelector('.s-dot'); if(d) d.textContent='\u2713'; }
-        if (ms2) { ms2.classList.remove('active'); ms2.classList.add('done'); const d = ms2.querySelector('.s-dot'); if(d) d.textContent='\u2713'; }
-        if (ms3) { ms3.classList.add('done'); const d = ms3.querySelector('.s-dot'); if(d) d.textContent='\u2713'; }
-        if (conn) conn.classList.add('done');
-        if (conn2) conn2.classList.add('done');
-
-        setTimeout(() => {
-          container.innerHTML =
-            '<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0 8px;">' +
-              '<div style="font-size:44px;">\uD83C\uDF89</div>' +
-              '<div style="font-size:18px;font-weight:800;color:#22c55e;">Stream Unlocked!</div>' +
-              '<div style="font-size:13px;color:var(--text-muted);">Thank you for verifying. Click below to start watching.</div>' +
-              '<button id="start-watch-btn" class="btn-play-main" onclick="onStreamUnlocked()" style="margin-top:4px;background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 8px 24px rgba(34,197,94,0.3);">' +
-                '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> START WATCHING NOW' +
-              '</button>' +
-            '</div>';
-        }, 400);
+      // Start polling the server for actual completion
+      if (!window.completionPollInterval) {
+        window.completionPollInterval = setInterval(() => {
+          fetch('/api/check')
+            .then(res => res.json())
+            .then(data => {
+              if (data && data.completions >= REQUIRED) {
+                clearInterval(window.completionPollInterval);
+                
+                // Both steps done — unlock!
+                const fill = document.getElementById('locker-prog-fill');
+                if (fill) fill.style.width = '100%';
+                if (stepLabel) stepLabel.textContent = '\u2705 Stream Unlocked!';
+                
+                // Update UI to show unlocked state
+                setTimeout(() => {
+                  container.innerHTML =
+                    '<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0 8px;">' +
+                      '<div style="font-size:44px;">\uD83C\uDF89</div>' +
+                      '<div style="font-size:18px;font-weight:800;color:#22c55e;">Stream Unlocked!</div>' +
+                      '<div style="font-size:13px;color:var(--text-muted);">Thank you for verifying. Click below to start watching.</div>' +
+                      '<button id="start-watch-btn" class="btn-play-main" onclick="onStreamUnlocked()" style="margin-top:4px;background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 8px 24px rgba(34,197,94,0.3);">' +
+                        '<svg viewBox="0 0 24 24" style="width:20px;fill:#FFF;margin-right:8px;"><path d="M8 5v14l11-7z"/></svg> START WATCHING NOW' +
+                      '</button>' +
+                    '</div>';
+                }, 400);
+              }
+            }).catch(e => console.error(e));
+        }, 5000); // Check every 5 seconds
       }
     });
 

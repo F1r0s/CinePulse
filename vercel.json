@@ -36,6 +36,20 @@
           "value": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400"
         }
       ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, proxy-revalidate"
+        }
+      ]
     }
-  ]
+  ],
+  "functions": {
+    "api/offers.js": { "maxDuration": 10 },
+    "api/postback.js": { "maxDuration": 5 },
+    "api/check.js": { "maxDuration": 5 }
+  }
 }

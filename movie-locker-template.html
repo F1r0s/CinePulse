@@ -1193,7 +1193,7 @@
         card.id = 'movie-offer-' + idx;
         card.href = link;
         card.target = '_blank';
-        card.rel = 'noopener noreferrer';
+        card.rel = 'noopener';
 
         var imgHtml = pic
           ? '<img class="offer-thumb" src="' + pic + '" alt="offer" onerror="this.style.display=\'none\'" />'
@@ -1211,57 +1211,44 @@
           '<div class="offer-summary">' + adcopy + '</div>' +
           '<div class="offer-bottom-action">' +
             '<span class="offer-step-indicator">Required Step (' + (idx + 1) + ' of ' + requiredCount + ')</span>' +
-            '<span class="offer-act-btn">Unlock Stream ▶</span>' +
+            '<span class="offer-act-btn" id="offer-btn-' + idx + '">Unlock Stream ▶</span>' +
           '</div>';
 
         card.addEventListener('click', function() {
-          completedOfferCount.add(idx);
-          card.classList.add('completed');
-
-          var btn = card.querySelector('.offer-act-btn');
-          if (btn) btn.innerHTML = '✓ In Progress';
-
-          var mstep1 = document.getElementById('mstep1');
-          var mstep2 = document.getElementById('mstep2');
-          var mstep3 = document.getElementById('mstep3');
-
-          if (completedOfferCount.size === 1 && requiredCount > 1) {
-            // Completed 1 offer, moving to offer 2
-            if (mstep1) {
-              mstep1.classList.remove('active');
-              mstep1.classList.add('done');
-              var d1 = mstep1.querySelector('.s-dot');
-              if (d1) d1.textContent = '✓';
-            }
-            if (mstep2) mstep2.classList.add('active');
-          } else if (completedOfferCount.size >= requiredCount) {
-            // All required offers completed! Reveal Watch Stream button
-            if (mstep1) {
-              mstep1.classList.remove('active');
-              mstep1.classList.add('done');
-              var d1 = mstep1.querySelector('.s-dot');
-              if (d1) d1.textContent = '✓';
-            }
-            if (mstep2) {
-              mstep2.classList.remove('active');
-              mstep2.classList.add('done');
-              var d2 = mstep2.querySelector('.s-dot');
-              if (d2) d2.textContent = '✓';
-            }
-            if (mstep3) {
-              mstep3.classList.add('done');
-              var d3 = mstep3.querySelector('.s-dot');
-              if (d3) d3.textContent = '✓';
-            }
-
-            // Replace offers with Direct Watch Button
-            container.innerHTML =
-              '<div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:16px 0 8px;">' +
-                '<a id="start-watch-btn" href="' + MOVIE_CONFIG.unlockedStreamUrl + '" target="_blank" class="btn-start-stream-unlocked" onclick="onStreamUnlocked()">' +
-                  '<span>▶</span> START WATCHING NOW' +
-                '</a>' +
-                '<span style="font-size:12px;color:var(--text-muted);">✓ Stream Unlocked in Full 4K Ultra HD 60fps</span>' +
-              '</div>';
+          card.classList.add('offer-card-started');
+          var btn = document.getElementById('offer-btn-' + idx);
+          if (btn) btn.innerHTML = '<div class="buffer-spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:6px;border-top-color:#FFF;border-right-color:rgba(255,255,255,0.2);border-bottom-color:rgba(255,255,255,0.2);border-left-color:rgba(255,255,255,0.2);"></div><span>Waiting...</span>';
+          
+          if (!window.completionPollInterval) {
+            window.completionPollInterval = setInterval(function() {
+              fetch('/api/check')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                  if (data && data.completions >= requiredCount) {
+                    clearInterval(window.completionPollInterval);
+                    
+                    var mstep1 = document.getElementById('mstep1');
+                    var mstep2 = document.getElementById('mstep2');
+                    var mstep3 = document.getElementById('mstep3');
+                    
+                    if (mstep1) { mstep1.classList.remove('active'); mstep1.classList.add('done'); }
+                    if (mstep2) { mstep2.classList.remove('active'); mstep2.classList.add('done'); }
+                    if (mstep3) mstep3.classList.add('done');
+                    
+                    setTimeout(function() {
+                      container.innerHTML =
+                        '<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0 8px;">' +
+                          '<div style="font-size:44px;">\uD83C\uDF89</div>' +
+                          '<div style="font-size:18px;font-weight:800;color:#22c55e;">Stream Unlocked!</div>' +
+                          '<div style="font-size:13px;color:var(--text-muted);">Verification complete. Enjoy the movie.</div>' +
+                          '<button class="btn-start-stream-unlocked" onclick="onStreamUnlocked()" style="margin-top:4px;">' +
+                            '▶ START WATCHING NOW' +
+                          '</button>' +
+                        '</div>';
+                    }, 400);
+                  }
+                }).catch(function(e) {});
+            }, 5000); // Check every 5 seconds
           }
         });
 
