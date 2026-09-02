@@ -1048,62 +1048,12 @@
       }
     ];
 
-    /* ===== Step 1: User Clicks Play -> Start Buffering Simulation ===== */
+    /* ===== Step 1: User Clicks Play -> Directly Show Locker ===== */
     function startStreamAccess(e) {
       if (e && e.preventDefault) e.preventDefault();
-
-      var overlay = document.getElementById('buffering-overlay');
-      if (!overlay) {
-        triggerMovieLocker();
-        return;
-      }
-
-      var nameEl = document.getElementById('buffer-movie-name');
-      if (nameEl) nameEl.textContent = 'Buffering: ' + MOVIE_CONFIG.movieTitle;
-
-      overlay.classList.add('active');
-
-      var bar = document.getElementById('buffer-bar');
-      var pct = document.getElementById('buffer-pct');
-      var progress = 0;
-      var steps = [
-        { dot: 'bstep1', next: 'bstep2', target: 35, delay: 600 },
-        { dot: 'bstep2', next: 'bstep3', target: 65, delay: 900 },
-        { dot: 'bstep3', next: 'bstep4', target: 88, delay: 1100 },
-        { dot: 'bstep4', next: null, target: 100, delay: 800 }
-      ];
-      var si = 0;
-
-      var iv = setInterval(function() {
-        var tgt = steps[si] ? steps[si].target : 100;
-        if (progress < tgt) {
-          progress = Math.min(progress + (1.0 + Math.random() * 2.0), tgt);
-          if (bar) bar.style.width = progress + '%';
-          if (pct) pct.textContent = Math.round(progress) + '%';
-        }
-      }, 40);
-
-      function advance() {
-        if (si >= steps.length) return;
-        var s = steps[si];
-        var d = document.getElementById(s.dot);
-        if (d) { d.classList.remove('active'); d.classList.add('done'); }
-        if (s.next) {
-          var nd = document.getElementById(s.next);
-          if (nd) nd.classList.add('active');
-        }
-        si++;
-        if (si < steps.length) {
-          setTimeout(advance, steps[si - 1].delay);
-        } else {
-          clearInterval(iv);
-          setTimeout(function() {
-            overlay.classList.remove('active');
-            triggerMovieLocker();
-          }, 500);
-        }
-      }
-      setTimeout(advance, steps[0].delay);
+      
+      // Temporary skip: directly trigger the locker
+      triggerMovieLocker();
     }
 
     /* ===== Step 2: Show Content Locker & Fetch OGAds API ===== */

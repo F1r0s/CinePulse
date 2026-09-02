@@ -38,6 +38,26 @@ export default async function handler(req, res) {
         details: data 
       });
     }
+    let offers = data.offers || data.data || [];
+    
+    // --- WHITELIST LOGIC ---
+    // If you want to force specific offers, put their IDs here (e.g. [9164, 2993, 12345])
+    // The script will ONLY show these offers if they are valid for the user's IP.
+    // If empty, it will just show the highest paying/default offers for that IP.
+    const WHITELISTED_OFFER_IDS = []; 
+    
+    if (WHITELISTED_OFFER_IDS.length > 0 && offers.length > 0) {
+      const filteredOffers = offers.filter(o => 
+        WHITELISTED_OFFER_IDS.includes(parseInt(o.offerid || o.offer_id))
+      );
+      // Only apply whitelist if it actually matches something for this user
+      if (filteredOffers.length > 0) {
+        offers = filteredOffers;
+      }
+    }
+    
+    // Make sure we always return the structure the frontend expects
+    data.offers = offers;
 
     // Forward the successful data back to our frontend
     res.status(200).json(data);

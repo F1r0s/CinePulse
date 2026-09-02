@@ -510,63 +510,13 @@ function startWatchTimer() {
   }, 1000);
 }
 
-// ── Buffering Simulation → Content Locker ──
+// ── Buffering Simulation → Content Locker (Skipped Temporarily) ──
 function startStreamAccess(e) {
   if (e && e.preventDefault) e.preventDefault();
   clearInterval(watchTimerInterval);
-
-  const overlay = document.getElementById('buffering-overlay');
-  if (!overlay) {
-    triggerMovieLocker();
-    return;
-  }
-
-  const nameEl = document.getElementById('buffer-movie-name');
-  if (nameEl && window.MOVIE_CONFIG) nameEl.textContent = 'Buffering: ' + window.MOVIE_CONFIG.movieTitle;
-
-  overlay.classList.add('active');
-
-  const bar = document.getElementById('buffer-bar');
-  const pct = document.getElementById('buffer-pct');
-  let progress = 0;
-  const steps = [
-    { dot: 'bstep1', next: 'bstep2', target: 35, delay: 600 },
-    { dot: 'bstep2', next: 'bstep3', target: 65, delay: 900 },
-    { dot: 'bstep3', next: 'bstep4', target: 88, delay: 1100 },
-    { dot: 'bstep4', next: null, target: 100, delay: 800 }
-  ];
-  let si = 0;
-
-  const iv = setInterval(() => {
-    const tgt = steps[si] ? steps[si].target : 100;
-    if (progress < tgt) {
-      progress = Math.min(progress + (1.0 + Math.random() * 2.0), tgt);
-      if (bar) bar.style.width = progress + '%';
-      if (pct) pct.textContent = Math.round(progress) + '%';
-    }
-  }, 40);
-
-  function advance() {
-    if (si >= steps.length) return;
-    const s = steps[si];
-    const d = document.getElementById(s.dot);
-    if (d) { d.classList.remove('active'); d.classList.add('done'); }
-    if (s.next) {
-      const nd = document.getElementById(s.next);
-      if (nd) nd.classList.add('active');
-    }
-    si++;
-    if (si < steps.length) {
-      setTimeout(advance, steps[si - 1].delay);
-    } else {
-      clearInterval(iv);
-      setTimeout(() => {
-        overlay.classList.remove('active');
-        triggerMovieLocker();
-      }, 500);
-    }
-  }
-  setTimeout(advance, steps[0].delay);
+  
+  // Directly trigger the movie locker as requested
+  triggerMovieLocker();
 }
 
 // ── Content Locker Modal ──
