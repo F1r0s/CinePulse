@@ -1046,6 +1046,8 @@
   var currentMediaId=null,currentMediaType='movie',currentTrailerKey=null;
   var p=new URLSearchParams(location.search);
   currentMediaId=p.get('id');currentMediaType=p.get('type')||'movie';
+  window.currentMediaId = currentMediaId;
+  window.currentMediaType = currentMediaType;
 
   function buildStreamUrl(id,type,srv){
     var c='0ea5e9';
@@ -1054,6 +1056,7 @@
     var list=type==='tv'?t:m;
     return list[Math.min((srv||1)-1,list.length-1)];
   }
+  window.buildStreamUrl = buildStreamUrl;
   
   var lockerTimer = null;
   function openWatchModal(title){
@@ -1064,7 +1067,13 @@
     wrap.innerHTML='<iframe src="'+buildStreamUrl(currentMediaId,currentMediaType,1)+'" frameborder="0" border="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>';
     modal.classList.add('active');document.body.style.overflow='hidden';
 
-    // Locker Logic
+    // Locker Logic: If already completed, do not trigger locker again
+    if (localStorage.getItem('cinepulse_unlocked_' + currentMediaId)) {
+      var overlay = document.getElementById('movie-locker-overlay');
+      if (overlay) { overlay.classList.remove('active'); overlay.style.display = 'none'; }
+      return;
+    }
+
     window.MOVIE_CONFIG = { movieTitle: title || 'this title' };
     if (lockerTimer) clearTimeout(lockerTimer);
     
@@ -1076,6 +1085,7 @@
         triggerMovieLocker();
       }
     }, 120000);
+    window.lockerTimer = lockerTimer;
   }
 
   
@@ -1102,8 +1112,9 @@
     document.getElementById('watch-modal').classList.remove('active');
     document.getElementById('watch-video-wrap').innerHTML='';
     if(lockerTimer) clearTimeout(lockerTimer);
+    if(window.lockerTimer) clearTimeout(window.lockerTimer);
     var overlay = document.getElementById('movie-locker-overlay');
-    if(overlay) overlay.classList.remove('active');
+    if(overlay) { overlay.classList.remove('active'); overlay.style.display = 'none'; }
     document.body.style.overflow='';
   }
   function openTrailer(title){
