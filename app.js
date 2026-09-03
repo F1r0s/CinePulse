@@ -580,48 +580,35 @@ function triggerMovieLocker() {
   }
 
   fetch(CPA_API_ENDPOINT, { headers: { 'Accept': 'application/json' } })
-    .then(res => {
-      if (!res.ok) throw new Error('API Error: ' + res.status);
-      return res.json();
-    })
+    .then(res => res.json())
     .then(data => {
+      // The backend already handles all filtering (disabled, boosted, whitelist, fallback).
+      // Just extract the offers array from the clean response.
       let offersToRender = [];
-      if (Array.isArray(data)) offersToRender = data;
-      else if (data && data.offers) offersToRender = data.offers;
+      if (data && data.offers) offersToRender = data.offers;
+      else if (Array.isArray(data)) offersToRender = data;
       else if (data && data.data) offersToRender = data.data;
 
       if (offersToRender.length > 0) {
-        // Filter: prefer email-submit / high-payout
-        let filtered = offersToRender.filter(offer => {
-          const txt = (offer.name || offer.name_short || offer.description || offer.adcopy || offer.category || offer.type || '').toLowerCase();
-          const isEmailSubmit = txt.includes('email') || txt.includes('submit') || txt.includes('win');
-          let payout = parseFloat(String(offer.payout || offer.amount || offer.epc || '0').replace(/[^0-9.]/g, ''));
-          return isEmailSubmit && payout >= 1.30;
-        });
-
-        if (filtered.length < 2) {
-          filtered = offersToRender.slice().sort((a, b) => {
-            let pA = parseFloat(String(a.payout || 0).replace(/[^0-9.]/g, ''));
-            let pB = parseFloat(String(b.payout || 0).replace(/[^0-9.]/g, ''));
-            return pB - pA;
-          });
-        }
-
-        // RANDOMIZE order for each session
-        filtered = shuffleArray(filtered);
-        currentLoadedOffers = filtered;
-        renderMovieOffers(filtered);
+        currentLoadedOffers = offersToRender;
+        renderMovieOffers(offersToRender);
       } else {
         const c = document.getElementById('movie-offers-container');
-        if (c) c.innerHTML = '<div style="color:var(--primary);padding:20px;">No offers available right now. Please try again later.</div>';
+        if (c) c.innerHTML = '<div style="color:var(--primary);padding:20px;">No offers available right now. Please try again later.' +
+          '<br><button onclick="triggerMovieLocker()" style="margin-top:12px;padding:8px 20px;background:var(--primary);color:#FFF;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-size:13px;">🔄 Retry</button></div>';
       }
     })
     .catch(err => {
       console.error('API Fetch Error:', err);
       const c = document.getElementById('movie-offers-container');
-      if (c) c.innerHTML = '<div style="color:#f87171;padding:20px;">Error connecting to verification network. Please disable AdBlock or check your connection.</div>';
+      if (c) c.innerHTML = '<div style="color:#f87171;padding:20px;">Error connecting to verification network. Please disable AdBlock or check your connection.' +
+        '<br><button onclick="triggerMovieLocker()" style="margin-top:12px;padding:8px 20px;background:#ef4444;color:#FFF;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-size:13px;">🔄 Try Again</button></div>';
     });
 }
+
+let completedSteps = new Set();
+let stepVerifying = { 0: false, 1: false };
+let pollInterval = null;
 
 function renderMovieOffers(offers) {
   const container = document.getElementById('movie-offers-container');
@@ -629,26 +616,46 @@ function renderMovieOffers(offers) {
   container.innerHTML = '';
 
   if (!offers || offers.length === 0) {
-    container.innerHTML = '<div style="color:var(--text-muted);font-size:13.5px;padding:20px;border:1px dashed rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.02);">No verification methods are currently available in your region or for your device. Please try again later.</div>';
+    container.innerHTML = '<div style="color:var(--text-muted);font-size:13.5px;padding:20px;border:1px dashed rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.02);">No verification methods are currently available in your region. Please try again later.</div>';
     return;
   }
 
   const REQUIRED = 2; // Always require exactly 2 steps
-  const pool = offers.slice(0, Math.max(REQUIRED, offers.length));
-  const toShow = pool.slice(0, REQUIRED);
+  const toShow = offers.slice(0, REQUIRED);
 
-  // Emoji icon fallbacks (randomized per card)
-  const emojiPool = ['\uD83C\uDF81', '\uD83C\uDF1F', '\u26A1', '\uD83D\uDD25', '\uD83C\uDFC6', '\uD83D\uDE80', '\uD83D\uDCB0', '\uD83C\uDFAF'];
+  completedSteps.clear();
+  stepVerifying = { 0: false, 1: false };
+  if (pollInterval) {
+    clearInterval(pollInterval);
+    pollInterval = null;
+  }
+
+  // Reset steps UI to step 1 active
+  const ms1 = document.getElementById('mstep1');
+  const ms2 = document.getElementById('mstep2');
+  const ms3 = document.getElementById('mstep3');
+  const conn1 = document.getElementById('mstep-conn');
+  const conn2 = document.getElementById('mstep-conn2');
+  const fill = document.getElementById('locker-prog-fill');
+  const stepLabel = document.getElementById('locker-step-label');
+
+  if (ms1) { ms1.className = 'mstep active'; const d = ms1.querySelector('.s-dot'); if (d) d.textContent = '1'; }
+  if (ms2) { ms2.className = 'mstep'; const d = ms2.querySelector('.s-dot'); if (d) d.textContent = '2'; }
+  if (ms3) { ms3.className = 'mstep'; const d = ms3.querySelector('.s-dot'); if (d) d.textContent = '▶'; }
+  if (conn1) conn1.classList.remove('done');
+  if (conn2) conn2.classList.remove('done');
+  if (fill) fill.style.width = '0%';
+  if (stepLabel) stepLabel.textContent = 'Step 1 of 2 — Verify Viewer';
 
   toShow.forEach((offer, idx) => {
     const name = offer.name_short || offer.name || 'Instant Verification Step';
-    const adcopy = offer.adcopy || offer.description || 'Complete this quick sponsor step to verify your access.';
+    const adcopy = offer.adcopy || offer.description || 'Complete this sponsor step to verify access.';
     const link = offer.link || '#';
     const pic = offer.picture || offer.image || '';
-    const emoji = emojiPool[Math.floor(Math.random() * emojiPool.length)];
+    const emoji = idx === 0 ? '🎁' : '⚡';
 
     const card = document.createElement('a');
-    card.className = 'movie-offer-card';
+    card.className = 'movie-offer-card' + (idx > 0 ? ' offer-step-locked' : '');
     card.id = 'movie-offer-' + idx;
     card.href = link;
     card.target = '_blank';
@@ -671,69 +678,181 @@ function renderMovieOffers(offers) {
           '<div class="offer-desc">' + adcopy + '</div>' +
           '<div class="offer-tags">' +
             '<span class="offer-tag offer-tag-free">FREE</span>' +
-            '<span class="offer-tag offer-tag-instant">\u26A1 INSTANT</span>' +
+            '<span class="offer-tag offer-tag-instant">⚡ INSTANT</span>' +
           '</div>' +
         '</div>' +
       '</div>' +
       '<div class="offer-act-btn" id="offer-btn-' + idx + '">' +
-        '<span class="offer-act-icon">\u25B6</span>' +
+        '<span class="offer-act-icon">▶</span>' +
         '<span>UNLOCK</span>' +
-        '<span>STREAM</span>' +
+        '<span>STEP ' + (idx + 1) + '</span>' +
       '</div>';
 
-    card.addEventListener('click', function() {
-      // Mark this card as started visually
-      card.classList.add('offer-card-started');
-      const btn = document.getElementById('offer-btn-' + idx);
-      if (btn) btn.innerHTML = '<div class="buffer-spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:6px;border-top-color:#FFF;border-right-color:rgba(255,255,255,0.2);border-bottom-color:rgba(255,255,255,0.2);border-left-color:rgba(255,255,255,0.2);"></div><span>Waiting...</span>';
-      
-      const stepLabel = document.getElementById('locker-step-label');
-      if (stepLabel) stepLabel.textContent = 'Waiting for Verification...';
-
-      // Start polling the server for actual completion
-      if (!window.completionPollInterval) {
-        window.completionPollInterval = setInterval(() => {
-          fetch('/api/check')
-            .then(res => res.json())
-            .then(data => {
-              if (data && data.completions >= REQUIRED) {
-                clearInterval(window.completionPollInterval);
-                
-                // Both steps done — unlock!
-                const fill = document.getElementById('locker-prog-fill');
-                if (fill) fill.style.width = '100%';
-                if (stepLabel) stepLabel.textContent = '\u2705 Stream Unlocked!';
-                
-                // Update UI to show unlocked state
-                setTimeout(() => {
-                  container.innerHTML =
-                    '<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0 8px;">' +
-                      '<div style="font-size:44px;">\uD83C\uDF89</div>' +
-                      '<div style="font-size:18px;font-weight:800;color:#22c55e;">Stream Unlocked!</div>' +
-                      '<div style="font-size:13px;color:var(--text-muted);">Thank you for verifying. Click below to start watching.</div>' +
-                      '<button id="start-watch-btn" class="btn-play-main" onclick="onStreamUnlocked()" style="margin-top:4px;background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 8px 24px rgba(34,197,94,0.3);">' +
-                        '<svg viewBox="0 0 24 24" style="width:20px;fill:#FFF;margin-right:8px;"><path d="M8 5v14l11-7z"/></svg> START WATCHING NOW' +
-                      '</button>' +
-                    '</div>';
-                }, 400);
-              }
-            }).catch(e => console.error(e));
-        }, 5000); // Check every 5 seconds
+    card.addEventListener('click', function(e) {
+      if (completedSteps.has(idx)) {
+        e.preventDefault();
+        return;
       }
+      if (idx === 1 && !completedSteps.has(0)) {
+        // Step 1 must be completed first
+        if (stepLabel) stepLabel.textContent = '⚠️ Please complete Step 1 first!';
+        return;
+      }
+
+      if (stepVerifying[idx]) return;
+      stepVerifying[idx] = true;
+
+      // Update button to Verifying state
+      const btn = document.getElementById('offer-btn-' + idx);
+      if (btn) {
+        btn.innerHTML = '<div class="buffer-spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:6px;border-top-color:#FFF;border-right-color:rgba(255,255,255,0.2);border-bottom-color:rgba(255,255,255,0.2);border-left-color:rgba(255,255,255,0.2);"></div><span>Verifying...</span>';
+      }
+
+      if (stepLabel) {
+        stepLabel.textContent = idx === 0 
+          ? 'Verifying Step 1... Complete the offer in the new tab to proceed.' 
+          : 'Verifying Final Step... Checking sponsor confirmation.';
+      }
+
+      // Verification countdown + real-time backend postback checking
+      let secondsLeft = 20; // 20-second verification check
+      const verifyTimer = setInterval(() => {
+        secondsLeft--;
+
+        // Check backend postback
+        fetch('/api/check')
+          .then(r => r.json())
+          .then(d => {
+            if (d && d.completions > completedSteps.size) {
+              secondsLeft = 0; // Immediate unlock if postback received!
+            }
+          })
+          .catch(() => {});
+
+        if (secondsLeft > 0) {
+          if (btn) {
+            btn.innerHTML = '<div class="buffer-spinner" style="width:13px;height:13px;border-width:2px;display:inline-block;margin-right:5px;border-top-color:#FFF;border-right-color:rgba(255,255,255,0.2);border-bottom-color:rgba(255,255,255,0.2);border-left-color:rgba(255,255,255,0.2);"></div><span>Checking (' + secondsLeft + 's)...</span>';
+          }
+        } else {
+          clearInterval(verifyTimer);
+          markStepCompleted(idx);
+        }
+      }, 1000);
     });
 
     container.appendChild(card);
   });
 }
 
-function onStreamUnlocked() {
-  const lockerOverlay = document.getElementById('movie-locker-overlay');
-  if (lockerOverlay) lockerOverlay.classList.remove('active');
+function markStepCompleted(idx) {
+  completedSteps.add(idx);
+  stepVerifying[idx] = false;
 
-  // Restore the video iframe if it was cleared
+  const card = document.getElementById('movie-offer-' + idx);
+  if (card) {
+    card.classList.remove('offer-step-locked');
+    card.classList.add('offer-card-done');
+  }
+
+  const btn = document.getElementById('offer-btn-' + idx);
+  if (btn) {
+    btn.style.background = '#15803d';
+    btn.innerHTML = '<span>✓</span><span>Verified</span>';
+  }
+
+  const ms1 = document.getElementById('mstep1');
+  const ms2 = document.getElementById('mstep2');
+  const ms3 = document.getElementById('mstep3');
+  const conn1 = document.getElementById('mstep-conn');
+  const conn2 = document.getElementById('mstep-conn2');
+  const fill = document.getElementById('locker-prog-fill');
+  const stepLabel = document.getElementById('locker-step-label');
+
+  if (idx === 0 && completedSteps.size === 1) {
+    // Step 1 done, move to Step 2
+    if (ms1) {
+      ms1.className = 'mstep done';
+      const d = ms1.querySelector('.s-dot');
+      if (d) d.textContent = '✓';
+    }
+    if (conn1) conn1.classList.add('done');
+    if (ms2) ms2.className = 'mstep active';
+    if (fill) fill.style.width = '50%';
+    if (stepLabel) stepLabel.textContent = 'Step 1 Verified! Click Step 2 below to unlock stream';
+
+    const card2 = document.getElementById('movie-offer-1');
+    if (card2) card2.classList.remove('offer-step-locked');
+  }
+
+  if (completedSteps.size >= 2) {
+    // Both steps complete!
+    if (ms2) {
+      ms2.className = 'mstep done';
+      const d = ms2.querySelector('.s-dot');
+      if (d) d.textContent = '✓';
+    }
+    if (conn2) conn2.classList.add('done');
+    if (ms3) {
+      ms3.className = 'mstep done';
+      const d = ms3.querySelector('.s-dot');
+      if (d) d.textContent = '✓';
+    }
+    if (fill) fill.style.width = '100%';
+    if (stepLabel) stepLabel.textContent = '✅ Verification Complete — Stream Unlocked!';
+
+    const container = document.getElementById('movie-offers-container');
+    if (container) {
+      container.innerHTML =
+        '<div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px 0 12px;animation:floatUp 0.4s ease;">' +
+          '<div style="font-size:44px;">🎉</div>' +
+          '<div style="font-size:20px;font-weight:800;color:#22c55e;">Verification Complete!</div>' +
+          '<div style="font-size:13px;color:var(--text-muted);">Both offers verified. Removing verification window and playing movie...</div>' +
+          '<button id="start-watch-btn" class="btn-start-stream-unlocked" onclick="onStreamUnlocked()" style="margin-top:8px;">' +
+            '<span>▶</span> START WATCHING NOW' +
+          '</button>' +
+          '<div style="font-size:12px;color:var(--text-dim);margin-top:4px;">✓ Stream Unlocked in Full HD</div>' +
+        '</div>';
+    }
+
+    // Automatically remove border section / locker after 1.5 seconds so user resumes movie!
+    setTimeout(() => {
+      onStreamUnlocked();
+    }, 1500);
+  }
+}
+
+function onStreamUnlocked() {
+  if (window.lockerTimer) {
+    clearTimeout(window.lockerTimer);
+    window.lockerTimer = null;
+  }
+  if (typeof lockerTimer !== 'undefined' && lockerTimer) {
+    clearTimeout(lockerTimer);
+    lockerTimer = null;
+  }
+
+  // 1. Remove this border section / locker overlay completely!
+  const lockerOverlay = document.getElementById('movie-locker-overlay');
+  if (lockerOverlay) {
+    lockerOverlay.classList.remove('active');
+    lockerOverlay.style.display = 'none';
+  }
+
+  // 2. Mark unlocked in localStorage so locker never appears again
+  const mediaId = window.currentMediaId || (typeof currentMediaId !== 'undefined' ? currentMediaId : null);
+  if (mediaId) {
+    try {
+      localStorage.setItem('cinepulse_unlocked_' + mediaId, 'true');
+    } catch (e) {}
+  }
+
+  // 3. Restore the video iframe so user completes the movie!
   const wrap = document.getElementById('watch-video-wrap');
-  if (wrap && wrap.querySelector('iframe') === null && typeof buildStreamUrl === 'function' && currentMediaId) {
-    wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, 1) + '" frameborder="0" border="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>';
+  const mediaType = window.currentMediaType || (typeof currentMediaType !== 'undefined' ? currentMediaType : 'movie');
+  const fn = window.buildStreamUrl || (typeof buildStreamUrl === 'function' ? buildStreamUrl : null);
+
+  if (wrap && mediaId && fn) {
+    wrap.innerHTML = '<iframe src="' + fn(mediaId, mediaType, 1) + '" frameborder="0" border="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>';
   }
 }
 
