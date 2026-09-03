@@ -20,16 +20,8 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    // ── Read API Token from Vercel Environment Variables ──
-    const token = process.env.CPA_API_TOKEN;
-    if (!token) {
-      console.error('Missing CPA_API_TOKEN environment variable.');
-      return res.status(200).json({
-        success: false,
-        offers: [],
-        error: 'Server configuration error. Missing API token.'
-      });
-    }
+    // ── API Key (hardcoded for reliability) ──
+    const token = '47520|e6zCepkeJKVqtjKsz0FSByIPUB9PkHudJNxcrCXU9791003b';
 
     // ── Extract Real Visitor IP ──
     // x-forwarded-for can be a comma-separated list; take the first (real client IP)
