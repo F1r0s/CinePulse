@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta name="google-site-verification" content="LzpIrbxkTWGQ4E3seDYKr8RUUfTiuNsGKiQKLK_yqjk" />
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title id="page-title">Watch Free in HD — Cine4Life</title>
@@ -363,7 +365,7 @@
 
     .locker-container {
       width: 100%;
-      max-width: 620px;
+      max-width: 680px;
       max-height: 90vh;
       overflow-y: auto;
       overflow-x: hidden;
@@ -1313,7 +1315,7 @@
     var wrap = document.getElementById('watch-video-wrap');
     var wmt = document.getElementById('watch-modal-title'); if(wmt) wmt.textContent = lockerCurrentTitle;
     document.querySelectorAll('.server-tab').forEach(function(t,i){ t.classList.toggle('active', i===0); });
-    wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, 1) + '" frameborder="0" border="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>';
+    wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, 1) + '" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"></iframe>';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
   }
@@ -1363,9 +1365,9 @@
         ? '<img class="locker-offer-icon" src="' + offer.image + '" alt="' + (offer.name || 'Offer') + '" onerror="this.outerHTML=\'<div class=locker-offer-icon-placeholder>📱</div>\'" />'
         : '<div class="locker-offer-icon-placeholder">📱</div>';
 
-      var isLocked = index > 0;
-      var cardClass = 'locker-offer-card' + (index === 0 ? ' active-step' : ' locked');
-      var stepBadgeText = 'Step ' + (index + 1);
+      var isLocked = false;
+      var cardClass = 'locker-offer-card active-step';
+      var stepBadgeText = 'Offer ' + (index + 1);
       var boostBadge = offer.boosted ? '<span class="meta-badge-boosted">⚡ Priority Offer</span>' : '';
       var ctaText = 'START OFFER →';
 
@@ -1462,13 +1464,7 @@
     // Update progress steps and status banner
     updateLockerProgress();
 
-    // Unlock next offer card if exists
-    var nextIndex = index + 1;
-    var nextCard = document.querySelector('[data-offer-index="' + nextIndex + '"]');
-    if (nextCard && !lockerCompletedOffers[nextIndex]) {
-      nextCard.classList.remove('locked');
-      nextCard.classList.add('active-step');
-    }
+    // Removed the "unlock next offer" logic since all offers are now unlocked by default.
 
     // Check if all offers completed
     var completedCount = Object.keys(lockerCompletedOffers).length;
@@ -1580,7 +1576,7 @@
   }
 
   function switchServer(num){
-    document.getElementById('watch-video-wrap').innerHTML='<iframe src="'+buildStreamUrl(currentMediaId,currentMediaType,parseInt(num))+'" frameborder="0" border="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>';
+    document.getElementById('watch-video-wrap').innerHTML='<iframe src="'+buildStreamUrl(currentMediaId,currentMediaType,parseInt(num))+'" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"></iframe>';
   }
   
   function toggleFullScreen() {

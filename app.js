@@ -44,7 +44,7 @@ function buildMovieCard(item, type = 'movie') {
   const year = getYear(item.release_date || item.first_air_date);
   const rating = formatRating(item.vote_average);
   const posterPath = item.poster_path ? `${IMG_POSTER}${item.poster_path}` : '';
-  const mediaType = type || item.media_type || 'movie';
+  const mediaType = item.media_type || type || 'movie';
   const watchUrl = `watch.html?id=${item.id}&type=${mediaType}`;
 
   const posterHtml = posterPath
