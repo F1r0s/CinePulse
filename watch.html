@@ -1282,6 +1282,14 @@
   var lockerCurrentTitle = '';
 
   function openWatchModal(title){
+    // Check if unlocked within last 10 hours
+    var unlockTime = localStorage.getItem('movie_unlocked_' + currentMediaId);
+    if (unlockTime && (Date.now() - parseInt(unlockTime)) < 10 * 60 * 60 * 1000) {
+      lockerCurrentTitle = title || 'Now Streaming';
+      actuallyOpenPlayer();
+      return;
+    }
+
     // Show the content locker instead of the video player directly
     lockerCurrentTitle = title || 'Now Streaming';
     lockerCompletedOffers = {};
@@ -1376,53 +1384,97 @@
     }).join('');
   }
 
+  var lockerPollingIntervals = {};
+
   function handleOfferClick(event, index) {
     // Let link open in new tab
     var card = event.currentTarget;
 
-    // If already completed, do nothing
-    if (lockerCompletedOffers[index]) {
-      event.preventDefault();
+    // If already completed or currently loading, do nothing
+    if (lockerCompletedOffers[index] || card.classList.contains('loading')) {
       return;
     }
 
-    // Mark this offer as completed
+    // Set card to loading state
+    card.classList.add('loading');
+    
+    var badge = document.getElementById('locker-badge-' + index);
+    if (badge) {
+      badge.className = 'meta-badge';
+      badge.textContent = '⏳ Awaiting...';
+    }
+
+    var cta = document.getElementById('locker-cta-' + index);
+    if (cta) {
+      cta.innerHTML = '<span class="spinner" style="display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,0.3); border-radius:50%; border-top-color:#fff; animation:spin 1s ease-in-out infinite; margin-right:8px; vertical-align:middle;"></span>Loading...';
+    }
+
+    // Start polling the backend to see if the user really completed the offer
+    pollOfferCompletion(index, card);
+  }
+
+  function pollOfferCompletion(index, card) {
+    // Clear any existing interval for this offer
+    if (lockerPollingIntervals[index]) {
+      clearInterval(lockerPollingIntervals[index]);
+    }
+
+    // Poll every 5 seconds
+    lockerPollingIntervals[index] = setInterval(function() {
+      // Check the backend for completion status
+      fetch('/api/check')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data.completed) {
+            // Stop polling
+            clearInterval(lockerPollingIntervals[index]);
+            
+            // Mark as completed
+            markOfferAsCompleted(index, card);
+          }
+        })
+        .catch(function(err) {
+          console.error('Error checking offer status:', err);
+        });
+    }, 5000);
+  }
+
+  function markOfferAsCompleted(index, card) {
     lockerCompletedOffers[index] = true;
 
     // Update card UI to show completed state
-    setTimeout(function() {
-      card.classList.remove('locked');
-      card.classList.remove('active-step');
-      card.classList.add('completed');
+    card.classList.remove('locked');
+    card.classList.remove('loading');
+    card.classList.remove('active-step');
+    card.classList.add('completed');
 
-      var badge = document.getElementById('locker-badge-' + index);
-      if (badge) {
-        badge.className = 'meta-badge-done';
-        badge.textContent = '✓ Done';
-      }
+    var badge = document.getElementById('locker-badge-' + index);
+    if (badge) {
+      badge.className = 'meta-badge-done';
+      badge.textContent = '✓ Done';
+    }
 
-      var cta = document.getElementById('locker-cta-' + index);
-      if (cta) {
-        cta.textContent = '✓ Completed';
-      }
+    var cta = document.getElementById('locker-cta-' + index);
+    if (cta) {
+      cta.textContent = '✓ Completed';
+    }
 
-      // Update progress steps and status banner
-      updateLockerProgress();
+    // Update progress steps and status banner
+    updateLockerProgress();
 
-      // Unlock next offer card if exists
-      var nextIndex = index + 1;
-      var nextCard = document.querySelector('[data-offer-index="' + nextIndex + '"]');
-      if (nextCard && !lockerCompletedOffers[nextIndex]) {
-        nextCard.classList.remove('locked');
-        nextCard.classList.add('active-step');
-      }
+    // Unlock next offer card if exists
+    var nextIndex = index + 1;
+    var nextCard = document.querySelector('[data-offer-index="' + nextIndex + '"]');
+    if (nextCard && !lockerCompletedOffers[nextIndex]) {
+      nextCard.classList.remove('locked');
+      nextCard.classList.add('active-step');
+    }
 
-      // Check if all offers completed
-      var completedCount = Object.keys(lockerCompletedOffers).length;
-      if (completedCount >= lockerTotalOffers) {
-        unlockContent();
-      }
-    }, 350);
+    // Check if all offers completed
+    var completedCount = Object.keys(lockerCompletedOffers).length;
+    if (completedCount >= lockerTotalOffers) {
+      unlockContent();
+    }
   }
 
   function updateLockerProgress() {
@@ -1513,6 +1565,9 @@
   }
 
   function unlockContent() {
+    // Save 10 hour unlock state for this media
+    localStorage.setItem('movie_unlocked_' + currentMediaId, Date.now());
+
     // Hide offers, show celebratory unlocking state
     document.getElementById('locker-offers').style.display = 'none';
     var unlockingEl = document.getElementById('locker-unlocking');
