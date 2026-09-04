@@ -313,6 +313,424 @@
       }
     }
 
+    /* ═══════════════════════════════════════════════════════ */
+    /*  CONTENT LOCKER MODAL                                  */
+    /* ═══════════════════════════════════════════════════════ */
+    #content-locker-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      animation: lockerFadeIn 0.3s ease;
+    }
+    #content-locker-overlay.active {
+      display: flex;
+    }
+    @keyframes lockerFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes lockerSlideUp {
+      from { transform: translateY(40px) scale(0.95); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    @keyframes lockerPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(14, 165, 233, 0); }
+    }
+    @keyframes lockerShimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    @keyframes lockerCheckIn {
+      0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+      60% { transform: scale(1.2) rotate(10deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    @keyframes lockerSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    .locker-container {
+      width: 100%;
+      max-width: 640px;
+      background: linear-gradient(145deg, rgba(15, 20, 30, 0.97), rgba(10, 14, 23, 0.99));
+      border: 1px solid rgba(14, 165, 233, 0.15);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(14, 165, 233, 0.1), 0 0 120px rgba(14, 165, 233, 0.06);
+      animation: lockerSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Locker Header */
+    .locker-header {
+      padding: 28px 28px 0;
+      text-align: center;
+    }
+    .locker-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(14, 165, 233, 0.05));
+      border: 2px solid rgba(14, 165, 233, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 28px;
+      animation: lockerPulse 2s ease-in-out infinite;
+    }
+    .locker-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+    .locker-subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    /* Progress Bar */
+    .locker-progress {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 28px;
+      margin-bottom: 24px;
+    }
+    .locker-step {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .locker-step-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.3);
+      flex-shrink: 0;
+      transition: all 0.4s ease;
+    }
+    .locker-step-circle.active {
+      border-color: var(--primary);
+      color: var(--primary);
+      box-shadow: 0 0 12px rgba(14, 165, 233, 0.3);
+    }
+    .locker-step-circle.completed {
+      border-color: #22c55e;
+      background: #22c55e;
+      color: #fff;
+      animation: lockerCheckIn 0.5s ease;
+    }
+    .locker-step-line {
+      flex: 1;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+    }
+    .locker-step-line-fill {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, #22c55e, #0ea5e9);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.5s ease;
+      border-radius: 3px;
+    }
+    .locker-step-line-fill.filled {
+      transform: scaleX(1);
+    }
+    .locker-step-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.3);
+      transition: color 0.3s;
+    }
+    .locker-step-label.active { color: var(--primary); }
+    .locker-step-label.completed { color: #22c55e; }
+
+    /* Offer Cards */
+    .locker-offers {
+      padding: 0 28px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .locker-offer-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+    }
+    .locker-offer-card:hover {
+      background: rgba(14, 165, 233, 0.06);
+      border-color: rgba(14, 165, 233, 0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    .locker-offer-card.completed {
+      background: rgba(34, 197, 94, 0.06);
+      border-color: rgba(34, 197, 94, 0.2);
+      pointer-events: none;
+    }
+    .locker-offer-card.completed::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(34, 197, 94, 0.03);
+      pointer-events: none;
+    }
+    .locker-offer-card.locked {
+      opacity: 0.4;
+      pointer-events: none;
+      filter: grayscale(0.5);
+    }
+    .locker-offer-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .locker-offer-icon-placeholder {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(14, 165, 233, 0.05));
+      border: 1px solid rgba(14, 165, 233, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .locker-offer-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .locker-offer-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 3px;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .locker-offer-desc {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.45);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .locker-offer-cta {
+      flex-shrink: 0;
+      padding: 10px 18px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), #0284c7);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      font-family: inherit;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    }
+    .locker-offer-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(14, 165, 233, 0.45);
+    }
+    .locker-offer-card.completed .locker-offer-cta {
+      background: #22c55e;
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    }
+    .locker-offer-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .locker-offer-badge.step-badge {
+      background: rgba(14, 165, 233, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+    }
+    .locker-offer-badge.done-badge {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+
+    /* Locker States */
+    .locker-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 28px;
+      gap: 16px;
+    }
+    .locker-loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(14, 165, 233, 0.15);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: lockerSpin 0.7s linear infinite;
+    }
+    .locker-loading-text {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 500;
+    }
+    .locker-error {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 28px;
+      gap: 16px;
+      text-align: center;
+    }
+    .locker-error.active { display: flex; }
+    .locker-error-icon { font-size: 40px; }
+    .locker-error-text {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.5;
+    }
+    .locker-retry-btn {
+      padding: 12px 28px;
+      border-radius: 10px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: inherit;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .locker-retry-btn:hover {
+      background: #0284c7;
+      transform: translateY(-2px);
+    }
+
+    /* Unlocking State */
+    .locker-unlocking {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 28px;
+      gap: 16px;
+      text-align: center;
+    }
+    .locker-unlocking.active { display: flex; }
+    .locker-unlock-icon {
+      font-size: 48px;
+      animation: lockerCheckIn 0.6s ease;
+    }
+    .locker-unlock-text {
+      font-size: 18px;
+      font-weight: 700;
+      color: #22c55e;
+    }
+    .locker-unlock-sub {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Locker Footer */
+    .locker-footer {
+      padding: 16px 28px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      text-align: center;
+    }
+    .locker-footer p {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.2);
+      line-height: 1.5;
+    }
+    .locker-close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      z-index: 5;
+    }
+    .locker-close-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .locker-container { border-radius: 20px; }
+      .locker-header { padding: 20px 20px 0; }
+      .locker-offers { padding: 0 20px 20px; }
+      .locker-progress { padding: 0 20px; }
+      .locker-icon { width: 52px; height: 52px; font-size: 24px; }
+      .locker-title { font-size: 18px; }
+      .locker-subtitle { font-size: 13px; }
+      .locker-offer-card { padding: 14px; gap: 12px; }
+      .locker-offer-icon, .locker-offer-icon-placeholder { width: 48px; height: 48px; border-radius: 12px; }
+      .locker-offer-name { font-size: 14px; }
+      .locker-offer-cta { padding: 8px 14px; font-size: 12px; }
+      .locker-footer { padding: 14px 20px; }
+    }
 
   </style>
 </head>
@@ -492,6 +910,66 @@
     </div>
   </div>
 
+  <!-- CONTENT LOCKER MODAL -->
+  <div id="content-locker-overlay">
+    <div class="locker-container" style="position:relative;">
+      <button class="locker-close-btn" onclick="closeContentLocker()" aria-label="Close">&#x2715;</button>
+      
+      <!-- Header -->
+      <div class="locker-header">
+        <div class="locker-icon">&#x1F513;</div>
+        <h2 class="locker-title">Unlock This Content</h2>
+        <p class="locker-subtitle">Complete <strong>2 quick steps</strong> below to start watching in HD</p>
+      </div>
+
+      <!-- Progress Steps -->
+      <div class="locker-progress">
+        <div class="locker-step">
+          <div class="locker-step-circle active" id="locker-step-1">1</div>
+          <span class="locker-step-label active" id="locker-label-1">Step 1</span>
+        </div>
+        <div class="locker-step-line"><div class="locker-step-line-fill" id="locker-line-1"></div></div>
+        <div class="locker-step">
+          <div class="locker-step-circle" id="locker-step-2">2</div>
+          <span class="locker-step-label" id="locker-label-2">Step 2</span>
+        </div>
+        <div class="locker-step-line"><div class="locker-step-line-fill" id="locker-line-2"></div></div>
+        <div class="locker-step">
+          <div class="locker-step-circle" id="locker-step-done">&#x2713;</div>
+          <span class="locker-step-label" id="locker-label-done">Watch</span>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div class="locker-loading" id="locker-loading">
+        <div class="locker-loading-spinner"></div>
+        <div class="locker-loading-text">Loading offers for your region...</div>
+      </div>
+
+      <!-- Error State -->
+      <div class="locker-error" id="locker-error">
+        <div class="locker-error-icon">&#x26A0;&#xFE0F;</div>
+        <div class="locker-error-text" id="locker-error-text">Failed to load offers. Please try again.</div>
+        <button class="locker-retry-btn" onclick="loadLockerOffers()">Retry</button>
+      </div>
+
+      <!-- Offers List -->
+      <div class="locker-offers" id="locker-offers" style="display:none;"></div>
+
+      <!-- Unlocking State -->
+      <div class="locker-unlocking" id="locker-unlocking">
+        <div class="locker-unlock-icon">&#x1F3AC;</div>
+        <div class="locker-unlock-text">Content Unlocked!</div>
+        <div class="locker-unlock-sub">Preparing your stream...</div>
+      </div>
+
+      <!-- Footer -->
+      <div class="locker-footer">
+        <p>Complete both steps above to unlock free HD streaming.<br>Offers are provided by our partners and are based on your region.</p>
+      </div>
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <footer class="site-footer">
     <div class="footer-inner">
@@ -530,13 +1008,216 @@
   }
   window.buildStreamUrl = buildStreamUrl;
   
+  // ── Content Locker State ──
+  var lockerCompletedOffers = {};
+  var lockerTotalOffers = 0;
+  var lockerCurrentTitle = '';
+
   function openWatchModal(title){
-    var modal=document.getElementById('watch-modal');
-    var wrap=document.getElementById('watch-video-wrap');
-    var wmt = document.getElementById('watch-modal-title'); if(wmt) wmt.textContent=title||'Now Streaming';
-    document.querySelectorAll('.server-tab').forEach(function(t,i){t.classList.toggle('active',i===0);});
-    wrap.innerHTML='<iframe src="'+buildStreamUrl(currentMediaId,currentMediaType,1)+'" frameborder="0" border="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>';
-    modal.classList.add('active');document.body.style.overflow='hidden';
+    // Show the content locker instead of the video player directly
+    lockerCurrentTitle = title || 'Now Streaming';
+    lockerCompletedOffers = {};
+    var overlay = document.getElementById('content-locker-overlay');
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    loadLockerOffers();
+  }
+
+  function closeContentLocker() {
+    var overlay = document.getElementById('content-locker-overlay');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  function actuallyOpenPlayer() {
+    // Close the locker
+    closeContentLocker();
+    // Now open the real video player
+    var modal = document.getElementById('watch-modal');
+    var wrap = document.getElementById('watch-video-wrap');
+    var wmt = document.getElementById('watch-modal-title'); if(wmt) wmt.textContent = lockerCurrentTitle;
+    document.querySelectorAll('.server-tab').forEach(function(t,i){ t.classList.toggle('active', i===0); });
+    wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, 1) + '" frameborder="0" border="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>';
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  async function loadLockerOffers() {
+    var loadingEl = document.getElementById('locker-loading');
+    var errorEl = document.getElementById('locker-error');
+    var offersEl = document.getElementById('locker-offers');
+    var unlockingEl = document.getElementById('locker-unlocking');
+
+    // Reset states
+    loadingEl.style.display = 'flex';
+    errorEl.classList.remove('active');
+    offersEl.style.display = 'none';
+    unlockingEl.classList.remove('active');
+    resetLockerProgress();
+
+    try {
+      var response = await fetch('/api/offers');
+      var data = await response.json();
+
+      loadingEl.style.display = 'none';
+
+      if (!data.success || !data.offers || data.offers.length === 0) {
+        document.getElementById('locker-error-text').textContent = data.error || 'No offers available for your region right now.';
+        errorEl.classList.add('active');
+        return;
+      }
+
+      lockerTotalOffers = data.offers.length;
+      lockerCompletedOffers = {};
+      renderLockerOffers(data.offers);
+      offersEl.style.display = 'flex';
+
+    } catch (err) {
+      console.error('[Locker] Error loading offers:', err);
+      loadingEl.style.display = 'none';
+      document.getElementById('locker-error-text').textContent = 'Network error. Please check your connection and try again.';
+      errorEl.classList.add('active');
+    }
+  }
+
+  function renderLockerOffers(offers) {
+    var container = document.getElementById('locker-offers');
+    container.innerHTML = offers.map(function(offer, index) {
+      var imgHtml = offer.image
+        ? '<img class="locker-offer-icon" src="' + offer.image + '" alt="' + (offer.name || 'Offer') + '" onerror="this.outerHTML=\'<div class=locker-offer-icon-placeholder>📱</div>\'" />'
+        : '<div class="locker-offer-icon-placeholder">📱</div>';
+
+      return '<a href="' + offer.link + '" target="_blank" rel="noopener" class="locker-offer-card' + (index > 0 ? ' locked' : '') + '" data-offer-id="' + offer.offer_id + '" data-offer-index="' + index + '" onclick="handleOfferClick(event, ' + index + ')">' +
+        '<span class="locker-offer-badge step-badge" id="locker-badge-' + index + '">Step ' + (index + 1) + '</span>' +
+        imgHtml +
+        '<div class="locker-offer-info">' +
+          '<div class="locker-offer-name">' + (offer.name || 'Complete Offer') + '</div>' +
+          '<div class="locker-offer-desc">' + (offer.description || 'Complete this offer to continue') + '</div>' +
+        '</div>' +
+        '<span class="locker-offer-cta" id="locker-cta-' + index + '">' + (offer.cta || 'START →') + '</span>' +
+      '</a>';
+    }).join('');
+  }
+
+  function handleOfferClick(event, index) {
+    // Don't prevent default — let the link open in a new tab
+    var card = event.currentTarget;
+
+    // If already completed, do nothing
+    if (lockerCompletedOffers[index]) {
+      event.preventDefault();
+      return;
+    }
+
+    // Mark this offer as completed
+    lockerCompletedOffers[index] = true;
+
+    // Update the card UI to show completed state
+    setTimeout(function() {
+      card.classList.remove('locked');
+      card.classList.add('completed');
+
+      var badge = document.getElementById('locker-badge-' + index);
+      if (badge) {
+        badge.className = 'locker-offer-badge done-badge';
+        badge.textContent = '✓ Done';
+      }
+
+      var cta = document.getElementById('locker-cta-' + index);
+      if (cta) {
+        cta.textContent = '✓ Completed';
+      }
+
+      // Update progress steps
+      updateLockerProgress();
+
+      // Unlock the next offer card if there is one
+      var nextIndex = index + 1;
+      var nextCard = document.querySelector('[data-offer-index="' + nextIndex + '"]');
+      if (nextCard && !lockerCompletedOffers[nextIndex]) {
+        nextCard.classList.remove('locked');
+      }
+
+      // Check if all offers completed
+      var completedCount = Object.keys(lockerCompletedOffers).length;
+      if (completedCount >= lockerTotalOffers) {
+        unlockContent();
+      }
+    }, 300);
+  }
+
+  function updateLockerProgress() {
+    var completedCount = Object.keys(lockerCompletedOffers).length;
+
+    // Step 1
+    var step1 = document.getElementById('locker-step-1');
+    var label1 = document.getElementById('locker-label-1');
+    var line1 = document.getElementById('locker-line-1');
+    if (completedCount >= 1) {
+      step1.className = 'locker-step-circle completed';
+      step1.textContent = '✓';
+      label1.className = 'locker-step-label completed';
+      line1.classList.add('filled');
+    }
+
+    // Step 2
+    var step2 = document.getElementById('locker-step-2');
+    var label2 = document.getElementById('locker-label-2');
+    var line2 = document.getElementById('locker-line-2');
+    if (completedCount >= 1) {
+      step2.className = 'locker-step-circle active';
+      label2.className = 'locker-step-label active';
+    }
+    if (completedCount >= 2) {
+      step2.className = 'locker-step-circle completed';
+      step2.textContent = '✓';
+      label2.className = 'locker-step-label completed';
+      line2.classList.add('filled');
+    }
+
+    // Done step
+    var stepDone = document.getElementById('locker-step-done');
+    var labelDone = document.getElementById('locker-label-done');
+    if (completedCount >= lockerTotalOffers) {
+      stepDone.className = 'locker-step-circle completed';
+      labelDone.className = 'locker-step-label completed';
+    }
+  }
+
+  function resetLockerProgress() {
+    var step1 = document.getElementById('locker-step-1');
+    var label1 = document.getElementById('locker-label-1');
+    var line1 = document.getElementById('locker-line-1');
+    step1.className = 'locker-step-circle active';
+    step1.textContent = '1';
+    label1.className = 'locker-step-label active';
+    line1.classList.remove('filled');
+
+    var step2 = document.getElementById('locker-step-2');
+    var label2 = document.getElementById('locker-label-2');
+    var line2 = document.getElementById('locker-line-2');
+    step2.className = 'locker-step-circle';
+    step2.textContent = '2';
+    label2.className = 'locker-step-label';
+    line2.classList.remove('filled');
+
+    var stepDone = document.getElementById('locker-step-done');
+    var labelDone = document.getElementById('locker-label-done');
+    stepDone.className = 'locker-step-circle';
+    stepDone.textContent = '✓';
+    labelDone.className = 'locker-step-label';
+  }
+
+  function unlockContent() {
+    // Hide offers, show unlocking state
+    document.getElementById('locker-offers').style.display = 'none';
+    var unlockingEl = document.getElementById('locker-unlocking');
+    unlockingEl.classList.add('active');
+
+    // After a short delay, open the actual player
+    setTimeout(function() {
+      actuallyOpenPlayer();
+    }, 1500);
   }
 
   function switchServer(num){
@@ -581,7 +1262,8 @@
   }
   document.getElementById('trailer-modal').addEventListener('click',function(e){if(e.target===e.currentTarget)closeTrailer();});
   document.getElementById('watch-modal').addEventListener('click',function(e){if(e.target===e.currentTarget)closeWatchModal();});
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeTrailer();closeWatchModal();}});
+  document.getElementById('content-locker-overlay').addEventListener('click',function(e){if(e.target===e.currentTarget)closeContentLocker();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeTrailer();closeWatchModal();closeContentLocker();}});
 
   function fmtRuntime(m){if(!m)return'--';var h=Math.floor(m/60),mn=m%60;return h?h+'h '+mn+'m':mn+'m';}
 
