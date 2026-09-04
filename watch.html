@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title id="page-title">Watch Free in HD — CinePulse</title>
-  <meta name="description" content="Stream movies and TV shows online in HD on CinePulse. No subscription required." />
+  <title id="page-title">Watch Free in HD — Cine4Life</title>
+  <meta name="description" content="Stream movies and TV shows online in HD on Cine4Life. No subscription required." />
   <meta name="theme-color" content="#0a0e17" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -314,20 +314,20 @@
     }
 
     /* ═══════════════════════════════════════════════════════ */
-    /*  CONTENT LOCKER MODAL                                  */
+    /*  CONTENT LOCKER MODAL (DYNAMIC CINE4LIFE REDESIGN)      */
     /* ═══════════════════════════════════════════════════════ */
     #content-locker-overlay {
       display: none;
       position: fixed;
       inset: 0;
       z-index: 10000;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+      background: rgba(3, 7, 18, 0.88);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
       align-items: center;
       justify-content: center;
       padding: 16px;
-      animation: lockerFadeIn 0.3s ease;
+      animation: lockerFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     #content-locker-overlay.active {
       display: flex;
@@ -337,20 +337,24 @@
       to { opacity: 1; }
     }
     @keyframes lockerSlideUp {
-      from { transform: translateY(40px) scale(0.95); opacity: 0; }
+      from { transform: translateY(32px) scale(0.96); opacity: 0; }
       to { transform: translateY(0) scale(1); opacity: 1; }
     }
-    @keyframes lockerPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); }
-      50% { box-shadow: 0 0 0 12px rgba(14, 165, 233, 0); }
+    @keyframes lockerPulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.45); }
+      50% { box-shadow: 0 0 0 10px rgba(14, 165, 233, 0); }
     }
-    @keyframes lockerShimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
+    @keyframes lockerLockFloat {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-3px) rotate(-3deg); }
     }
-    @keyframes lockerCheckIn {
+    @keyframes badgePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    @keyframes lockerCheckPop {
       0% { transform: scale(0) rotate(-180deg); opacity: 0; }
-      60% { transform: scale(1.2) rotate(10deg); }
+      60% { transform: scale(1.25) rotate(12deg); }
       100% { transform: scale(1) rotate(0deg); opacity: 1; }
     }
     @keyframes lockerSpin {
@@ -359,87 +363,229 @@
 
     .locker-container {
       width: 100%;
-      max-width: 640px;
-      background: linear-gradient(145deg, rgba(15, 20, 30, 0.97), rgba(10, 14, 23, 0.99));
-      border: 1px solid rgba(14, 165, 233, 0.15);
+      max-width: 620px;
+      max-height: 90vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: linear-gradient(168deg, rgba(15, 23, 42, 0.98), rgba(9, 14, 26, 0.99));
+      border: 1px solid rgba(14, 165, 233, 0.28);
       border-radius: 24px;
-      overflow: hidden;
-      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(14, 165, 233, 0.1), 0 0 120px rgba(14, 165, 233, 0.06);
-      animation: lockerSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 32px 90px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(14, 165, 233, 0.12), 0 0 60px rgba(14, 165, 233, 0.14);
+      animation: lockerSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+    .locker-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .locker-container::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .locker-container::-webkit-scrollbar-thumb {
+      background: rgba(14, 165, 233, 0.3);
+      border-radius: 3px;
     }
 
-    /* Locker Header */
-    .locker-header {
-      padding: 28px 28px 0;
-      text-align: center;
-    }
-    .locker-icon {
-      width: 64px;
-      height: 64px;
+    .locker-close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(14, 165, 233, 0.05));
-      border: 2px solid rgba(14, 165, 233, 0.25);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 15px;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 16px;
-      font-size: 28px;
-      animation: lockerPulse 2s ease-in-out infinite;
+      transition: all 0.2s ease;
+      z-index: 10;
     }
-    .locker-title {
-      font-size: 22px;
-      font-weight: 800;
-      color: #fff;
-      margin-bottom: 6px;
-      letter-spacing: -0.5px;
-    }
-    .locker-subtitle {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.5);
-      margin-bottom: 20px;
-      line-height: 1.5;
+    .locker-close-btn:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      transform: scale(1.08);
     }
 
-    /* Progress Bar */
-    .locker-progress {
+    /* Header */
+    .locker-header {
+      padding: 28px 24px 0;
+      text-align: center;
+    }
+    .locker-brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 13px;
+      border-radius: 999px;
+      background: rgba(14, 165, 233, 0.12);
+      border: 1px solid rgba(14, 165, 233, 0.28);
+      color: #38bdf8;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      box-shadow: 0 0 16px rgba(14, 165, 233, 0.2);
+    }
+    .brand-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 8px #38bdf8;
+      animation: badgePulse 2s infinite;
+    }
+    .locker-title {
+      font-size: 21px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 0.3px;
+      margin-bottom: 8px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 0 28px;
-      margin-bottom: 24px;
+      justify-content: center;
+      gap: 9px;
+      text-transform: uppercase;
+      line-height: 1.3;
     }
-    .locker-step {
-      flex: 1;
+    .locker-title-icon {
+      font-size: 22px;
+      display: inline-block;
+      animation: lockerLockFloat 3s ease-in-out infinite;
+    }
+    .locker-subtitle {
+      font-size: 13.5px;
+      color: rgba(226, 232, 240, 0.75);
+      line-height: 1.55;
+      margin-bottom: 16px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .locker-subtitle strong {
+      color: #38bdf8;
+      font-weight: 700;
+    }
+
+    /* Verification Guide Card (Inspired by reference photo) */
+    .locker-guide-card {
+      margin: 0 24px 16px;
+      padding: 12px 16px;
+      background: rgba(14, 165, 233, 0.04);
+      border: 1px solid rgba(14, 165, 233, 0.18);
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: left;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+    .guide-item {
       display: flex;
       align-items: center;
       gap: 10px;
+      font-size: 12.5px;
+      color: #e2e8f0;
+      line-height: 1.4;
+      font-weight: 500;
     }
-    .locker-step-circle {
-      width: 32px;
-      height: 32px;
+    .guide-check {
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      background: rgba(34, 197, 94, 0.16);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      color: #22c55e;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10.5px;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+
+    /* Dynamic Step Progress Status Banner */
+    .locker-status-banner {
+      margin: 0 24px 18px;
+      padding: 9px 14px;
+      background: linear-gradient(90deg, rgba(249, 115, 22, 0.08), rgba(34, 197, 94, 0.08));
+      border: 1px solid rgba(249, 115, 22, 0.28);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 12.5px;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+    .status-pill {
+      color: #fb923c;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .status-pill.active {
+      color: #f97316;
+      text-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+    }
+    .status-pill.completed {
+      color: #22c55e;
+      text-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+    }
+    .status-arrow {
+      color: rgba(255, 255, 255, 0.35);
+      font-weight: 800;
+    }
+
+    /* Interactive Stepper */
+    .locker-stepper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 24px;
+      margin-bottom: 20px;
+    }
+    .step-node {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .node-circle {
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       border: 2px solid rgba(255, 255, 255, 0.12);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 800;
-      color: rgba(255, 255, 255, 0.3);
+      color: rgba(255, 255, 255, 0.35);
       flex-shrink: 0;
-      transition: all 0.4s ease;
+      transition: all 0.35s ease;
+      background: rgba(255, 255, 255, 0.02);
     }
-    .locker-step-circle.active {
-      border-color: var(--primary);
-      color: var(--primary);
-      box-shadow: 0 0 12px rgba(14, 165, 233, 0.3);
+    .step-node.active .node-circle {
+      border-color: #0ea5e9;
+      color: #ffffff;
+      background: rgba(14, 165, 233, 0.2);
+      box-shadow: 0 0 14px rgba(14, 165, 233, 0.45);
     }
-    .locker-step-circle.completed {
+    .step-node.completed .node-circle {
       border-color: #22c55e;
       background: #22c55e;
-      color: #fff;
-      animation: lockerCheckIn 0.5s ease;
+      color: #ffffff;
+      animation: lockerCheckPop 0.4s ease;
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
     }
-    .locker-step-line {
+    .step-line {
       flex: 1;
       height: 3px;
       background: rgba(255, 255, 255, 0.08);
@@ -447,57 +593,70 @@
       overflow: hidden;
       position: relative;
     }
-    .locker-step-line-fill {
+    .step-line-fill {
       position: absolute;
       inset: 0;
-      background: linear-gradient(90deg, #22c55e, #0ea5e9);
+      background: linear-gradient(90deg, #0ea5e9, #22c55e);
       transform: scaleX(0);
       transform-origin: left;
-      transition: transform 0.5s ease;
+      transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
       border-radius: 3px;
     }
-    .locker-step-line-fill.filled {
+    .step-line-fill.filled {
       transform: scaleX(1);
     }
-    .locker-step-label {
+    .node-label {
       font-size: 12px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.3);
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.35);
       transition: color 0.3s;
+      white-space: nowrap;
     }
-    .locker-step-label.active { color: var(--primary); }
-    .locker-step-label.completed { color: #22c55e; }
+    .step-node.active .node-label { color: #38bdf8; }
+    .step-node.completed .node-label { color: #22c55e; }
 
-    /* Offer Cards */
+    /* Offer Cards List */
     .locker-offers {
-      padding: 0 28px 28px;
+      padding: 0 24px 22px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
     }
     .locker-offer-card {
       display: flex;
       align-items: center;
-      gap: 16px;
-      padding: 16px;
+      gap: 14px;
+      padding: 14px 16px;
       background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 16px;
-      transition: all 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       cursor: pointer;
       text-decoration: none;
       position: relative;
       overflow: hidden;
     }
-    .locker-offer-card:hover {
-      background: rgba(14, 165, 233, 0.06);
-      border-color: rgba(14, 165, 233, 0.2);
+    .locker-offer-card:hover:not(.locked):not(.completed) {
+      background: rgba(14, 165, 233, 0.08);
+      border-color: rgba(14, 165, 233, 0.35);
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 24px rgba(14, 165, 233, 0.15);
+    }
+    .locker-offer-card.active-step {
+      border-color: rgba(14, 165, 233, 0.4);
+      background: rgba(14, 165, 233, 0.05);
+      box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.25), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    .locker-offer-card.locked {
+      opacity: 0.45;
+      pointer-events: none;
+      filter: grayscale(0.5);
+      background: rgba(255, 255, 255, 0.015);
+      border-color: rgba(255, 255, 255, 0.04);
     }
     .locker-offer-card.completed {
       background: rgba(34, 197, 94, 0.06);
-      border-color: rgba(34, 197, 94, 0.2);
+      border-color: rgba(34, 197, 94, 0.3);
       pointer-events: none;
     }
     .locker-offer-card.completed::after {
@@ -507,145 +666,179 @@
       background: rgba(34, 197, 94, 0.03);
       pointer-events: none;
     }
-    .locker-offer-card.locked {
-      opacity: 0.4;
-      pointer-events: none;
-      filter: grayscale(0.5);
-    }
+
     .locker-offer-icon {
-      width: 56px;
-      height: 56px;
+      width: 54px;
+      height: 54px;
       border-radius: 14px;
       object-fit: cover;
       flex-shrink: 0;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
     .locker-offer-icon-placeholder {
-      width: 56px;
-      height: 56px;
+      width: 54px;
+      height: 54px;
       border-radius: 14px;
-      background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(14, 165, 233, 0.05));
-      border: 1px solid rgba(14, 165, 233, 0.15);
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(14, 165, 233, 0.05));
+      border: 1px solid rgba(14, 165, 233, 0.25);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 24px;
       flex-shrink: 0;
     }
+
     .locker-offer-info {
       flex: 1;
       min-width: 0;
     }
+    .offer-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+    }
+    .meta-badge-step {
+      font-size: 9.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: rgba(14, 165, 233, 0.16);
+      color: #38bdf8;
+      border: 1px solid rgba(14, 165, 233, 0.3);
+    }
+    .meta-badge-boosted {
+      font-size: 9.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: rgba(249, 115, 22, 0.14);
+      color: #fb923c;
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .meta-badge-done {
+      font-size: 9.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: rgba(34, 197, 94, 0.16);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
     .locker-offer-name {
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 700;
-      color: #fff;
+      color: #ffffff;
       margin-bottom: 3px;
-      line-height: 1.3;
+      line-height: 1.35;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .locker-offer-desc {
       font-size: 12px;
-      color: rgba(255, 255, 255, 0.45);
+      color: rgba(226, 232, 240, 0.55);
       line-height: 1.4;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
+
     .locker-offer-cta {
       flex-shrink: 0;
       padding: 10px 18px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--primary), #0284c7);
-      color: #fff;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      color: #ffffff;
       font-size: 13px;
       font-weight: 800;
       font-family: inherit;
       border: none;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.25s ease;
       white-space: nowrap;
-      letter-spacing: 0.3px;
-      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+      letter-spacing: 0.4px;
+      box-shadow: 0 4px 18px rgba(14, 165, 233, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
-    .locker-offer-cta:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(14, 165, 233, 0.45);
+    .locker-offer-card:hover:not(.locked):not(.completed) .locker-offer-cta {
+      transform: scale(1.04);
+      box-shadow: 0 6px 22px rgba(14, 165, 233, 0.55);
+    }
+    .locker-offer-card.locked .locker-offer-cta {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.35);
+      box-shadow: none;
+      cursor: not-allowed;
     }
     .locker-offer-card.completed .locker-offer-cta {
-      background: #22c55e;
-      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-    }
-    .locker-offer-badge {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .locker-offer-badge.step-badge {
-      background: rgba(14, 165, 233, 0.15);
-      color: var(--primary);
-      border: 1px solid rgba(14, 165, 233, 0.2);
-    }
-    .locker-offer-badge.done-badge {
-      background: rgba(34, 197, 94, 0.15);
-      color: #22c55e;
-      border: 1px solid rgba(34, 197, 94, 0.2);
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(34, 197, 94, 0.35);
     }
 
-    /* Locker States */
+    /* Loading State */
     .locker-loading {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 48px 28px;
+      padding: 40px 24px;
       gap: 16px;
     }
     .locker-loading-spinner {
-      width: 40px;
-      height: 40px;
+      width: 42px;
+      height: 42px;
       border: 3px solid rgba(14, 165, 233, 0.15);
-      border-top-color: var(--primary);
+      border-top-color: #0ea5e9;
       border-radius: 50%;
       animation: lockerSpin 0.7s linear infinite;
     }
     .locker-loading-text {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.5);
-      font-weight: 500;
+      font-size: 13.5px;
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 600;
     }
+
+    /* Error State */
     .locker-error {
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 48px 28px;
-      gap: 16px;
+      padding: 40px 24px;
+      gap: 14px;
       text-align: center;
     }
     .locker-error.active { display: flex; }
-    .locker-error-icon { font-size: 40px; }
+    .locker-error-icon { font-size: 38px; }
     .locker-error-text {
-      font-size: 15px;
-      color: rgba(255, 255, 255, 0.6);
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.65);
       line-height: 1.5;
+      max-width: 400px;
     }
     .locker-retry-btn {
-      padding: 12px 28px;
+      padding: 10px 24px;
       border-radius: 10px;
-      background: var(--primary);
+      background: #0ea5e9;
       color: #fff;
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 700;
       font-family: inherit;
       border: none;
@@ -657,81 +850,124 @@
       transform: translateY(-2px);
     }
 
-    /* Unlocking State */
+    /* Unlocking Celebratory State */
     .locker-unlocking {
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 48px 28px;
-      gap: 16px;
+      padding: 44px 24px;
+      gap: 14px;
       text-align: center;
     }
     .locker-unlocking.active { display: flex; }
     .locker-unlock-icon {
       font-size: 48px;
-      animation: lockerCheckIn 0.6s ease;
+      animation: lockerCheckPop 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      filter: drop-shadow(0 0 16px rgba(34, 197, 94, 0.6));
     }
     .locker-unlock-text {
-      font-size: 18px;
-      font-weight: 700;
+      font-size: 20px;
+      font-weight: 800;
       color: #22c55e;
+      letter-spacing: -0.3px;
     }
     .locker-unlock-sub {
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.4);
+      font-size: 13.5px;
+      color: rgba(255, 255, 255, 0.6);
     }
 
-    /* Locker Footer */
+    /* Footer */
     .locker-footer {
-      padding: 16px 28px;
-      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 14px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
       text-align: center;
+      background: rgba(0, 0, 0, 0.2);
     }
     .locker-footer p {
       font-size: 11px;
-      color: rgba(255, 255, 255, 0.2);
-      line-height: 1.5;
-    }
-    .locker-close-btn {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: rgba(255, 255, 255, 0.4);
-      font-size: 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-      z-index: 5;
-    }
-    .locker-close-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
+      color: rgba(255, 255, 255, 0.35);
+      line-height: 1.55;
+      margin: 0;
     }
 
-    /* Responsive */
-    @media (max-width: 480px) {
-      .locker-container { border-radius: 20px; }
-      .locker-header { padding: 20px 20px 0; }
-      .locker-offers { padding: 0 20px 20px; }
-      .locker-progress { padding: 0 20px; }
-      .locker-icon { width: 52px; height: 52px; font-size: 24px; }
-      .locker-title { font-size: 18px; }
-      .locker-subtitle { font-size: 13px; }
-      .locker-offer-card { padding: 14px; gap: 12px; }
-      .locker-offer-icon, .locker-offer-icon-placeholder { width: 48px; height: 48px; border-radius: 12px; }
-      .locker-offer-name { font-size: 14px; }
-      .locker-offer-cta { padding: 8px 14px; font-size: 12px; }
-      .locker-footer { padding: 14px 20px; }
+    /* Responsive PC & Mobile */
+    @media (max-width: 600px) {
+      #content-locker-overlay {
+        padding: 10px;
+      }
+      .locker-container {
+        border-radius: 20px;
+        max-height: 94vh;
+      }
+      .locker-header {
+        padding: 22px 16px 0;
+      }
+      .locker-title {
+        font-size: 17.5px;
+        gap: 6px;
+      }
+      .locker-subtitle {
+        font-size: 12.5px;
+        margin-bottom: 12px;
+      }
+      .locker-guide-card {
+        margin: 0 14px 14px;
+        padding: 11px 13px;
+        gap: 7px;
+      }
+      .guide-item {
+        font-size: 11.5px;
+        gap: 8px;
+      }
+      .locker-status-banner {
+        margin: 0 14px 14px;
+        padding: 8px 12px;
+        font-size: 11.5px;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .locker-stepper {
+        padding: 0 14px;
+        margin-bottom: 16px;
+        gap: 6px;
+      }
+      .node-circle {
+        width: 24px;
+        height: 24px;
+        font-size: 11px;
+      }
+      .node-label {
+        font-size: 11px;
+      }
+      .locker-offers {
+        padding: 0 14px 16px;
+        gap: 10px;
+      }
+      .locker-offer-card {
+        padding: 12px;
+        gap: 10px;
+      }
+      .locker-offer-icon, .locker-offer-icon-placeholder {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        font-size: 20px;
+      }
+      .locker-offer-name {
+        font-size: 13.5px;
+      }
+      .locker-offer-desc {
+        font-size: 11px;
+      }
+      .locker-offer-cta {
+        padding: 8px 12px;
+        font-size: 11.5px;
+      }
+      .locker-footer {
+        padding: 12px 14px;
+      }
     }
-
   </style>
 </head>
 <body>
@@ -740,7 +976,7 @@
   </div>
   <header class="navbar">
     <div class="nav-left">
-      <a href="index.html" class="logo-link"><span>Cine</span><span class="logo-text-accent">Pulse</span></a>
+      <a href="index.html" class="logo-link"><span>Cine</span><span class="logo-text-accent">4Life</span></a>
       <nav class="nav-links">
         <div class="nav-dropdown">
           <a href="movies.html" class="nav-link">
@@ -912,38 +1148,70 @@
 
   <!-- CONTENT LOCKER MODAL -->
   <div id="content-locker-overlay">
-    <div class="locker-container" style="position:relative;">
+    <div class="locker-container">
       <button class="locker-close-btn" onclick="closeContentLocker()" aria-label="Close">&#x2715;</button>
       
       <!-- Header -->
       <div class="locker-header">
-        <div class="locker-icon">&#x1F513;</div>
-        <h2 class="locker-title">Unlock This Content</h2>
-        <p class="locker-subtitle">Complete <strong>2 quick steps</strong> below to start watching in HD</p>
+        <div class="locker-brand-badge">
+          <span class="brand-badge-dot"></span>
+          <span>WELCOME TO CINE4LIFE 🎬</span>
+        </div>
+        <h2 class="locker-title">
+          <span class="locker-title-icon">🔒</span>
+          <span>STREAM ACCESS VERIFICATION</span>
+        </h2>
+        <p class="locker-subtitle">
+          Before starting the stream, we need to verify you are a real viewer.<br>
+          Complete <strong>2 quick steps</strong> below and your stream will resume instantly.
+        </p>
       </div>
 
-      <!-- Progress Steps -->
-      <div class="locker-progress">
-        <div class="locker-step">
-          <div class="locker-step-circle active" id="locker-step-1">1</div>
-          <span class="locker-step-label active" id="locker-label-1">Step 1</span>
+      <!-- Verification Guide Box (Inspired by photo) -->
+      <div class="locker-guide-card">
+        <div class="guide-item">
+          <span class="guide-check">✓</span>
+          <span>Click one verification option below (takes ~20 seconds)</span>
         </div>
-        <div class="locker-step-line"><div class="locker-step-line-fill" id="locker-line-1"></div></div>
-        <div class="locker-step">
-          <div class="locker-step-circle" id="locker-step-2">2</div>
-          <span class="locker-step-label" id="locker-label-2">Step 2</span>
+        <div class="guide-item">
+          <span class="guide-check">✓</span>
+          <span>Complete the quick step on the next page</span>
         </div>
-        <div class="locker-step-line"><div class="locker-step-line-fill" id="locker-line-2"></div></div>
-        <div class="locker-step">
-          <div class="locker-step-circle" id="locker-step-done">&#x2713;</div>
-          <span class="locker-step-label" id="locker-label-done">Watch</span>
+        <div class="guide-item">
+          <span class="guide-check">✓</span>
+          <span><span style="font-size:13px;">🎬</span> Your stream will unlock automatically</span>
+        </div>
+      </div>
+
+      <!-- Dynamic Step Status Banner -->
+      <div class="locker-status-banner" id="locker-status-banner">
+        <span class="status-pill active" id="status-pill-1">Step 1 of 2 — Verify Viewer</span>
+        <span class="status-arrow">→</span>
+        <span class="status-pill" id="status-pill-2">Step 2 of 2 — Stream Unlocked ✅</span>
+      </div>
+
+      <!-- Interactive Progress Stepper -->
+      <div class="locker-stepper">
+        <div class="step-node active" id="stepper-node-1">
+          <div class="node-circle" id="node-circle-1">1</div>
+          <span class="node-label" id="node-label-1">Step 1</span>
+        </div>
+        <div class="step-line"><div class="step-line-fill" id="step-line-1"></div></div>
+        <div class="step-node" id="stepper-node-2">
+          <div class="node-circle" id="node-circle-2">2</div>
+          <span class="node-label" id="node-label-2">Step 2</span>
+        </div>
+        <div class="step-line"><div class="step-line-fill" id="step-line-2"></div></div>
+        <div class="step-node" id="stepper-node-done">
+          <div class="node-circle" id="node-circle-done">✓</div>
+          <span class="node-label" id="node-label-done">Watch HD</span>
         </div>
       </div>
 
       <!-- Loading State -->
       <div class="locker-loading" id="locker-loading">
         <div class="locker-loading-spinner"></div>
-        <div class="locker-loading-text">Loading offers for your region...</div>
+        <div class="locker-loading-text">Loading verified offers for your region...</div>
       </div>
 
       <!-- Error State -->
@@ -956,16 +1224,16 @@
       <!-- Offers List -->
       <div class="locker-offers" id="locker-offers" style="display:none;"></div>
 
-      <!-- Unlocking State -->
+      <!-- Unlocking Celebratory State -->
       <div class="locker-unlocking" id="locker-unlocking">
         <div class="locker-unlock-icon">&#x1F3AC;</div>
         <div class="locker-unlock-text">Content Unlocked!</div>
-        <div class="locker-unlock-sub">Preparing your stream...</div>
+        <div class="locker-unlock-sub">Enjoy your stream in Full HD...</div>
       </div>
 
       <!-- Footer -->
       <div class="locker-footer">
-        <p>Complete both steps above to unlock free HD streaming.<br>Offers are provided by our partners and are based on your region.</p>
+        <p>Complete both steps above to unlock free HD streaming.<br>Offers are provided by our verified partners and are based on your region.</p>
       </div>
     </div>
   </div>
@@ -975,8 +1243,8 @@
     <div class="footer-inner">
       <div class="footer-grid">
         <div>
-          <a href="index.html" class="logo-link" style="font-size:28px;margin-bottom:12px;display:inline-flex"><span>Cine</span><span class="logo-text-accent">Pulse</span></a>
-          <p class="footer-brand-desc">CinePulse is your ultimate destination for streaming movies and TV shows.</p>
+          <a href="index.html" class="logo-link" style="font-size:28px;margin-bottom:12px;display:inline-flex"><span>Cine</span><span class="logo-text-accent">4Life</span></a>
+          <p class="footer-brand-desc">Cine4Life is your ultimate destination for streaming movies and TV shows.</p>
         </div>
         <div><h3 class="footer-col-title">Quick Links</h3><div class="footer-links"><a href="index.html">Home</a><a href="movies.html">Movies</a><a href="tv.html">TV Shows</a></div></div>
         <div><h3 class="footer-col-title">Movies</h3><div class="footer-links"><a href="movies.html?category=popular">Popular</a><a href="movies.html?category=now_playing">Now Playing</a><a href="movies.html?category=top_rated">Top Rated</a></div></div>
@@ -985,7 +1253,7 @@
       <hr class="footer-divider" />
       <p class="footer-disclaimer">This site does not store any files on our server, we only link to media hosted on 3rd party services.</p>
       <div class="footer-bottom">
-        <p>&copy; 2026 CinePulse. All rights reserved.</p>
+        <p>&copy; 2026 Cine4Life. All rights reserved.</p>
         <div class="footer-bottom-links"><a href="dmca.html">DMCA</a><span class="sep">&bull;</span><a href="privacy.html">Privacy Policy</a><span class="sep">&bull;</span><a href="terms.html">Terms of Service</a></div>
       </div>
     </div>
@@ -1087,20 +1355,29 @@
         ? '<img class="locker-offer-icon" src="' + offer.image + '" alt="' + (offer.name || 'Offer') + '" onerror="this.outerHTML=\'<div class=locker-offer-icon-placeholder>📱</div>\'" />'
         : '<div class="locker-offer-icon-placeholder">📱</div>';
 
-      return '<a href="' + offer.link + '" target="_blank" rel="noopener" class="locker-offer-card' + (index > 0 ? ' locked' : '') + '" data-offer-id="' + offer.offer_id + '" data-offer-index="' + index + '" onclick="handleOfferClick(event, ' + index + ')">' +
-        '<span class="locker-offer-badge step-badge" id="locker-badge-' + index + '">Step ' + (index + 1) + '</span>' +
+      var isLocked = index > 0;
+      var cardClass = 'locker-offer-card' + (index === 0 ? ' active-step' : ' locked');
+      var stepBadgeText = 'Step ' + (index + 1);
+      var boostBadge = offer.boosted ? '<span class="meta-badge-boosted">⚡ Priority Offer</span>' : '';
+      var ctaText = 'START OFFER →';
+
+      return '<a href="' + offer.link + '" target="_blank" rel="noopener" class="' + cardClass + '" data-offer-id="' + offer.offer_id + '" data-offer-index="' + index + '" onclick="handleOfferClick(event, ' + index + ')">' +
         imgHtml +
         '<div class="locker-offer-info">' +
+          '<div class="offer-meta-row">' +
+            '<span class="meta-badge-step" id="locker-badge-' + index + '">' + stepBadgeText + '</span>' +
+            boostBadge +
+          '</div>' +
           '<div class="locker-offer-name">' + (offer.name || 'Complete Offer') + '</div>' +
           '<div class="locker-offer-desc">' + (offer.description || 'Complete this offer to continue') + '</div>' +
         '</div>' +
-        '<span class="locker-offer-cta" id="locker-cta-' + index + '">' + (offer.cta || 'START →') + '</span>' +
+        '<span class="locker-offer-cta" id="locker-cta-' + index + '">' + ctaText + '</span>' +
       '</a>';
     }).join('');
   }
 
   function handleOfferClick(event, index) {
-    // Don't prevent default — let the link open in a new tab
+    // Let link open in new tab
     var card = event.currentTarget;
 
     // If already completed, do nothing
@@ -1112,14 +1389,15 @@
     // Mark this offer as completed
     lockerCompletedOffers[index] = true;
 
-    // Update the card UI to show completed state
+    // Update card UI to show completed state
     setTimeout(function() {
       card.classList.remove('locked');
+      card.classList.remove('active-step');
       card.classList.add('completed');
 
       var badge = document.getElementById('locker-badge-' + index);
       if (badge) {
-        badge.className = 'locker-offer-badge done-badge';
+        badge.className = 'meta-badge-done';
         badge.textContent = '✓ Done';
       }
 
@@ -1128,14 +1406,15 @@
         cta.textContent = '✓ Completed';
       }
 
-      // Update progress steps
+      // Update progress steps and status banner
       updateLockerProgress();
 
-      // Unlock the next offer card if there is one
+      // Unlock next offer card if exists
       var nextIndex = index + 1;
       var nextCard = document.querySelector('[data-offer-index="' + nextIndex + '"]');
       if (nextCard && !lockerCompletedOffers[nextIndex]) {
         nextCard.classList.remove('locked');
+        nextCard.classList.add('active-step');
       }
 
       // Check if all offers completed
@@ -1143,73 +1422,98 @@
       if (completedCount >= lockerTotalOffers) {
         unlockContent();
       }
-    }, 300);
+    }, 350);
   }
 
   function updateLockerProgress() {
     var completedCount = Object.keys(lockerCompletedOffers).length;
 
-    // Step 1
-    var step1 = document.getElementById('locker-step-1');
-    var label1 = document.getElementById('locker-label-1');
-    var line1 = document.getElementById('locker-line-1');
+    var pill1 = document.getElementById('status-pill-1');
+    var pill2 = document.getElementById('status-pill-2');
+
+    var stepNode1 = document.getElementById('stepper-node-1');
+    var circle1 = document.getElementById('node-circle-1');
+    var line1 = document.getElementById('step-line-1');
+
+    var stepNode2 = document.getElementById('stepper-node-2');
+    var circle2 = document.getElementById('node-circle-2');
+    var line2 = document.getElementById('step-line-2');
+
+    var stepNodeDone = document.getElementById('stepper-node-done');
+
+    // Step 1 Completed
     if (completedCount >= 1) {
-      step1.className = 'locker-step-circle completed';
-      step1.textContent = '✓';
-      label1.className = 'locker-step-label completed';
-      line1.classList.add('filled');
+      if (pill1) {
+        pill1.className = 'status-pill completed';
+        pill1.innerHTML = 'Step 1 Done ✓';
+      }
+      if (pill2) {
+        pill2.className = 'status-pill active';
+        pill2.innerHTML = 'Step 2 of 2 — Final Step ⚡';
+      }
+
+      if (stepNode1) {
+        stepNode1.className = 'step-node completed';
+        if (circle1) circle1.textContent = '✓';
+      }
+      if (line1) line1.classList.add('filled');
+
+      if (stepNode2) {
+        stepNode2.className = 'step-node active';
+      }
     }
 
-    // Step 2
-    var step2 = document.getElementById('locker-step-2');
-    var label2 = document.getElementById('locker-label-2');
-    var line2 = document.getElementById('locker-line-2');
-    if (completedCount >= 1) {
-      step2.className = 'locker-step-circle active';
-      label2.className = 'locker-step-label active';
-    }
+    // Step 2 Completed
     if (completedCount >= 2) {
-      step2.className = 'locker-step-circle completed';
-      step2.textContent = '✓';
-      label2.className = 'locker-step-label completed';
-      line2.classList.add('filled');
-    }
+      if (pill2) {
+        pill2.className = 'status-pill completed';
+        pill2.innerHTML = 'Step 2 of 2 — Stream Unlocked ✅';
+      }
 
-    // Done step
-    var stepDone = document.getElementById('locker-step-done');
-    var labelDone = document.getElementById('locker-label-done');
-    if (completedCount >= lockerTotalOffers) {
-      stepDone.className = 'locker-step-circle completed';
-      labelDone.className = 'locker-step-label completed';
+      if (stepNode2) {
+        stepNode2.className = 'step-node completed';
+        if (circle2) circle2.textContent = '✓';
+      }
+      if (line2) line2.classList.add('filled');
+
+      if (stepNodeDone) {
+        stepNodeDone.className = 'step-node completed';
+      }
     }
   }
 
   function resetLockerProgress() {
-    var step1 = document.getElementById('locker-step-1');
-    var label1 = document.getElementById('locker-label-1');
-    var line1 = document.getElementById('locker-line-1');
-    step1.className = 'locker-step-circle active';
-    step1.textContent = '1';
-    label1.className = 'locker-step-label active';
-    line1.classList.remove('filled');
+    var pill1 = document.getElementById('status-pill-1');
+    var pill2 = document.getElementById('status-pill-2');
+    if (pill1) {
+      pill1.className = 'status-pill active';
+      pill1.innerHTML = 'Step 1 of 2 — Verify Viewer';
+    }
+    if (pill2) {
+      pill2.className = 'status-pill';
+      pill2.innerHTML = 'Step 2 of 2 — Stream Unlocked ✅';
+    }
 
-    var step2 = document.getElementById('locker-step-2');
-    var label2 = document.getElementById('locker-label-2');
-    var line2 = document.getElementById('locker-line-2');
-    step2.className = 'locker-step-circle';
-    step2.textContent = '2';
-    label2.className = 'locker-step-label';
-    line2.classList.remove('filled');
+    var stepNode1 = document.getElementById('stepper-node-1');
+    var circle1 = document.getElementById('node-circle-1');
+    var line1 = document.getElementById('step-line-1');
+    if (stepNode1) stepNode1.className = 'step-node active';
+    if (circle1) circle1.textContent = '1';
+    if (line1) line1.classList.remove('filled');
 
-    var stepDone = document.getElementById('locker-step-done');
-    var labelDone = document.getElementById('locker-label-done');
-    stepDone.className = 'locker-step-circle';
-    stepDone.textContent = '✓';
-    labelDone.className = 'locker-step-label';
+    var stepNode2 = document.getElementById('stepper-node-2');
+    var circle2 = document.getElementById('node-circle-2');
+    var line2 = document.getElementById('step-line-2');
+    if (stepNode2) stepNode2.className = 'step-node';
+    if (circle2) circle2.textContent = '2';
+    if (line2) line2.classList.remove('filled');
+
+    var stepNodeDone = document.getElementById('stepper-node-done');
+    if (stepNodeDone) stepNodeDone.className = 'step-node';
   }
 
   function unlockContent() {
-    // Hide offers, show unlocking state
+    // Hide offers, show celebratory unlocking state
     document.getElementById('locker-offers').style.display = 'none';
     var unlockingEl = document.getElementById('locker-unlocking');
     unlockingEl.classList.add('active');
@@ -1217,7 +1521,7 @@
     // After a short delay, open the actual player
     setTimeout(function() {
       actuallyOpenPlayer();
-    }, 1500);
+    }, 1300);
   }
 
   function switchServer(num){
@@ -1287,7 +1591,7 @@
     var seasons=data.number_of_seasons?data.number_of_seasons+' Season'+(data.number_of_seasons>1?'s':''):null;
     var episodes=data.number_of_episodes?data.number_of_episodes+' Episodes':null;
 
-    document.title=title+(year?' ('+year+')':'')+' - CinePulse';
+    document.title=title+(year?' ('+year+')':'')+' - Cine4Life';
 
     if(backdrop)document.getElementById('detail-backdrop').style.backgroundImage="url('"+backdrop+"')";
 
