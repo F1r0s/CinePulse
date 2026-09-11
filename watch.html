@@ -1263,7 +1263,7 @@
 
   <script src="app.js"></script>
   <script>
-  var currentMediaId=null,currentMediaType='movie',currentTrailerKey=null;
+  var currentMediaId=null,currentMediaType='movie',currentTrailerKey=null,lockerTimeout=null;
   var p=new URLSearchParams(location.search);
   currentMediaId=p.get('id');currentMediaType=p.get('type')||'movie';
   window.currentMediaId = currentMediaId;
@@ -1284,27 +1284,37 @@
   var lockerCurrentTitle = '';
 
   function openWatchModal(title){
+    if (lockerTimeout) clearTimeout(lockerTimeout);
+    
     // Check if unlocked within last 10 hours
     var unlockTime = localStorage.getItem('movie_unlocked_' + currentMediaId);
+    
+    lockerCurrentTitle = title || 'Now Streaming';
+    actuallyOpenPlayer();
+
     if (unlockTime && (Date.now() - parseInt(unlockTime)) < 10 * 60 * 60 * 1000) {
-      lockerCurrentTitle = title || 'Now Streaming';
-      actuallyOpenPlayer();
       return;
     }
 
-    // Show the content locker instead of the video player directly
-    lockerCurrentTitle = title || 'Now Streaming';
-    lockerCompletedOffers = {};
-    var overlay = document.getElementById('content-locker-overlay');
-    overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    loadLockerOffers();
+    // Show the content locker after 5 minutes
+    lockerTimeout = setTimeout(function() {
+      var currentUnlockTime = localStorage.getItem('movie_unlocked_' + currentMediaId);
+      if (currentUnlockTime && (Date.now() - parseInt(currentUnlockTime)) < 10 * 60 * 60 * 1000) {
+        return;
+      }
+      lockerCompletedOffers = {};
+      var overlay = document.getElementById('content-locker-overlay');
+      overlay.classList.add('active');
+      loadLockerOffers();
+    }, 5 * 60 * 1000);
   }
 
   function closeContentLocker() {
     var overlay = document.getElementById('content-locker-overlay');
     overlay.classList.remove('active');
-    document.body.style.overflow = '';
+    if (!document.getElementById('watch-modal').classList.contains('active')) {
+      document.body.style.overflow = '';
+    }
   }
 
   function actuallyOpenPlayer() {
@@ -1569,9 +1579,9 @@
     var unlockingEl = document.getElementById('locker-unlocking');
     unlockingEl.classList.add('active');
 
-    // After a short delay, open the actual player
+    // After a short delay, close the locker to reveal the playing video
     setTimeout(function() {
-      actuallyOpenPlayer();
+      closeContentLocker();
     }, 1300);
   }
 
@@ -1595,6 +1605,7 @@
   }
 
   function closeWatchModal(){
+    if (lockerTimeout) clearTimeout(lockerTimeout);
     document.getElementById('watch-modal').classList.remove('active');
     document.getElementById('watch-video-wrap').innerHTML='';
     document.body.style.overflow='';
