@@ -1,0 +1,44 @@
+=========================================================
+THE API LOCKER "MASTER PROMPT"
+=========================================================
+
+When you want to build this again for a new landing page, just copy and paste the text below to the AI. It contains everything the AI needs to recreate this exact system securely:
+
+Context: I am building a custom Content Locker for a landing page. I want to use my CPA network's API (OGAds) to fetch offers and display them in a premium, custom UI, instead of using their default iframe locker. I am hosting this on Vercel (or a Node.js environment).
+
+Please build this system following these exactly requirements:
+
+1. Backend Serverless Function (api/offers.js):
+- Create an endpoint that securely proxies a request to https://lockerpreview.com/api/v2?ip=[USER_IP]&user_agent=[USER_AGENT]&max=50.
+- Include my Authorization Bearer token in the headers.
+- Ensure you capture the user's real IP address (checking x-forwarded-for and x-real-ip).
+- Once the data is fetched, sort the offers: prioritize any offers marked as `boosted`, and sort the rest by highest `payout` descending.
+- Map the data to a clean format (id, name, description, image, link, payout) and return only the top 2 offers to the frontend.
+
+2. Frontend Locker UI:
+- Design a highly premium, modern, glassmorphism modal that blocks the page content.
+- Include a progress stepper (e.g., "Step 1: Verify", "Step 2: Unlocked").
+- Render the 2 offers dynamically as clickable cards with their icons, titles, and descriptions. Both offers should be active and clickable from the start.
+
+3. Frontend Locker Logic:
+- When the page loads, fetch the offers from `/api/offers`.
+- When a user clicks an offer card, do not immediately unlock the content. Instead, change the button to a spinner that says "Loading..." or "Awaiting Completion...".
+- Set up a polling interval (setInterval) that pings a second endpoint `/api/check` every 5 seconds to see if the user really completed the offer.
+- Once both offers are marked as completed (or just 1 if I decide to change the requirement), play a success animation and hide the locker to reveal the page content.
+- Use `localStorage` to save the unlocked state so that if the user refreshes the page within 10 hours, they bypass the locker entirely.
+
+4. Backend Polling Endpoint (api/check.js):
+- Create a dummy endpoint that just returns { "completed": false }. (I will hook this up to my actual database postback system later).
+
+=========================================================
+HOW IT WORKS BEHIND THE SCENES
+=========================================================
+
+1. The Secure Proxy (api/offers.js)
+Instead of the frontend fetching offers directly from OGAds (which would expose your API key), we created a backend proxy. This script grabs the visitor's real IP address and User-Agent, securely asks OGAds for the offers, sorts them (putting boosted ones first and highest payouts at the top), and sends a clean, limited list (just the top 2) to your website.
+
+2. The Dummy Checker (api/check.js)
+Because you don't have a database set up to receive "postbacks" from OGAds when a user finishes an offer, we created a placeholder polling endpoint. It simply tells the frontend if the offer is done.
+
+3. The Frontend Locker UI & Logic (watch.html)
+The website blocks access to the movie and fetches the offers from api/offers.js. When a user clicks an offer, it doesn't just instantly unlock—it goes into a "Loading/Awaiting" state and repeatedly pings api/check.js every 5 seconds. Once unlocked, it saves a timestamp in the browser's localStorage so the user keeps access for 10 hours without seeing the locker again.

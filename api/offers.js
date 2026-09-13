@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
     const userAgent = req.headers['user-agent'] || 'Mozilla/5.0';
 
     // ── Call OGAds API ──
-    const apiUrl = `${API_ENDPOINT}?ip=${encodeURIComponent(clientIp)}&user_agent=${encodeURIComponent(userAgent)}&max=${MAX_OFFERS}`;
+    const apiUrl = `${API_ENDPOINT}?ip=${encodeURIComponent(clientIp)}&user_agent=${encodeURIComponent(userAgent)}&max=${MAX_OFFERS}&aff_sub=cine4life`;
 
     const response = await fetch(apiUrl, {
       method: 'GET',

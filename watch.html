@@ -1325,7 +1325,7 @@
     var wrap = document.getElementById('watch-video-wrap');
     var wmt = document.getElementById('watch-modal-title'); if(wmt) wmt.textContent = lockerCurrentTitle;
     document.querySelectorAll('.server-tab').forEach(function(t,i){ t.classList.toggle('active', i===0); });
-    wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, 1) + '" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"></iframe>';
+    wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, 1) + '" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
   }
@@ -1586,7 +1586,7 @@
   }
 
   function switchServer(num){
-    document.getElementById('watch-video-wrap').innerHTML='<iframe src="'+buildStreamUrl(currentMediaId,currentMediaType,parseInt(num))+'" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"></iframe>';
+    document.getElementById('watch-video-wrap').innerHTML='<iframe src="'+buildStreamUrl(currentMediaId,currentMediaType,parseInt(num))+'" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>';
   }
   
   function toggleFullScreen() {
