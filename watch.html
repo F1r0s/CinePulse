@@ -1199,16 +1199,9 @@
     </div>
   </div>
 
-  <!-- FLOATING FULLSCREEN TOGGLE BUTTON -->
-  <button class="watch-fullscreen-btn" id="watch-fullscreen-btn" onclick="toggleFullScreen()" aria-label="Toggle Fullscreen" title="Toggle Fullscreen">
-    <svg id="fs-icon-enter" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
-    <svg id="fs-icon-exit" viewBox="0 0 24 24" style="display:none"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>
-  </button>
-
   <!-- CONTENT LOCKER MODAL -->
   <div id="content-locker-overlay">
     <div class="locker-container">
-      <button class="locker-close-btn" onclick="closeContentLocker()" aria-label="Close">&#x2715;</button>
       
       <!-- Header -->
       <div class="locker-header">
@@ -1362,6 +1355,10 @@
       lockerCompletedOffers = {};
       var overlay = document.getElementById('content-locker-overlay');
       overlay.classList.add('active');
+      
+      // Stop the movie while locker is shown
+      document.getElementById('watch-video-wrap').innerHTML = '';
+      
       loadLockerOffers();
     }, 5 * 60 * 1000);
   }
@@ -1385,7 +1382,6 @@
     wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, 1) + '" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
-    showFsButton();
   }
 
   async function loadLockerOffers() {
@@ -1640,76 +1636,18 @@
     // After a short delay, close the locker to reveal the playing video
     setTimeout(function() {
       closeContentLocker();
+      // Restore video player
+      switchServer(window.activeServerNum || 1);
     }, 1300);
   }
 
   function switchServer(num){
-    document.getElementById('watch-video-wrap').innerHTML='<iframe src="'+buildStreamUrl(currentMediaId,currentMediaType,parseInt(num))+'" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>';
+    window.activeServerNum = parseInt(num);
+    document.getElementById('watch-video-wrap').innerHTML='<iframe src="'+buildStreamUrl(currentMediaId,currentMediaType,window.activeServerNum)+'" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>';
   }
   
-  function toggleFullScreen() {
-    var elem = document.getElementById('watch-modal');
-    var fsBtn = document.getElementById('watch-fullscreen-btn');
-    var iconEnter = document.getElementById('fs-icon-enter');
-    var iconExit = document.getElementById('fs-icon-exit');
-    var isFs = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
-    if (!isFs) {
-      // Enter fullscreen on the modal element
-      if (elem.requestFullscreen) { elem.requestFullscreen(); }
-      else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
-      else if (elem.mozRequestFullScreen) { elem.mozRequestFullScreen(); }
-      else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
-    } else {
-      if (document.exitFullscreen) { document.exitFullscreen(); }
-      else if (document.msExitFullscreen) { document.msExitFullscreen(); }
-      else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
-      else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
-    }
-  }
-
-  // Update fullscreen button icon when fullscreen state changes
-  function updateFsIcon() {
-    var iconEnter = document.getElementById('fs-icon-enter');
-    var iconExit = document.getElementById('fs-icon-exit');
-    var fsBtn = document.getElementById('watch-fullscreen-btn');
-    var isFs = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
-    if (iconEnter && iconExit) {
-      iconEnter.style.display = isFs ? 'none' : 'block';
-      iconExit.style.display = isFs ? 'block' : 'none';
-    }
-    if (fsBtn) {
-      if (isFs) { fsBtn.classList.add('is-fullscreen'); }
-      else { fsBtn.classList.remove('is-fullscreen'); }
-    }
-  }
-  document.addEventListener('fullscreenchange', updateFsIcon);
-  document.addEventListener('webkitfullscreenchange', updateFsIcon);
-  document.addEventListener('mozfullscreenchange', updateFsIcon);
-  document.addEventListener('MSFullscreenChange', updateFsIcon);
-
-  function showFsButton() {
-    var btn = document.getElementById('watch-fullscreen-btn');
-    if (btn) btn.style.display = 'flex';
-  }
-  function hideFsButton() {
-    var btn = document.getElementById('watch-fullscreen-btn');
-    if (btn) btn.style.display = 'none';
-  }
-
-  function exitFullscreenIfActive() {
-    var isFs = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
-    if (isFs) {
-      if (document.exitFullscreen) { document.exitFullscreen(); }
-      else if (document.msExitFullscreen) { document.msExitFullscreen(); }
-      else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
-      else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
-    }
-  }
-
   function closeWatchModal(){
     if (lockerTimeout) clearTimeout(lockerTimeout);
-    exitFullscreenIfActive();
-    hideFsButton();
     document.getElementById('watch-modal').classList.remove('active');
     document.getElementById('watch-video-wrap').innerHTML='';
     document.body.style.overflow='';
@@ -1732,8 +1670,7 @@
   }
   document.getElementById('trailer-modal').addEventListener('click',function(e){if(e.target===e.currentTarget)closeTrailer();});
   document.getElementById('watch-modal').addEventListener('click',function(e){if(e.target===e.currentTarget)closeWatchModal();});
-  document.getElementById('content-locker-overlay').addEventListener('click',function(e){if(e.target===e.currentTarget)closeContentLocker();});
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeTrailer();closeWatchModal();closeContentLocker();}});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeTrailer();closeWatchModal();}});
 
   function fmtRuntime(m){if(!m)return'--';var h=Math.floor(m/60),mn=m%60;return h?h+'h '+mn+'m':mn+'m';}
 
