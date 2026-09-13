@@ -1295,7 +1295,7 @@
       return;
     }
 
-    // Show the content locker after 5 minutes
+    // Show the content locker after 2 minutes
     lockerTimeout = setTimeout(function() {
       var currentUnlockTime = localStorage.getItem('movie_unlocked_' + currentMediaId);
       if (currentUnlockTime && (Date.now() - parseInt(currentUnlockTime)) < 10 * 60 * 60 * 1000) {
@@ -1308,7 +1308,7 @@
       var overlay = document.getElementById('content-locker-overlay');
       overlay.classList.add('active');
       loadLockerOffers();
-    }, 5 * 60 * 1000);
+    }, 2 * 60 * 1000);
   }
 
   function closeContentLocker() {
