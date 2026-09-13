@@ -1302,8 +1302,6 @@
         return;
       }
       lockerCompletedOffers = {};
-      // Stop the video so they can't keep watching behind the locker
-      document.getElementById('watch-video-wrap').innerHTML = '';
       lockerIsActive = true;
       var overlay = document.getElementById('content-locker-overlay');
       overlay.classList.add('active');
@@ -1582,12 +1580,8 @@
     var unlockingEl = document.getElementById('locker-unlocking');
     unlockingEl.classList.add('active');
 
-    // After a short delay, restore the video and close the locker
+    // After a short delay, close the locker to reveal the playing video
     setTimeout(function() {
-      // Restore the video stream
-      var wrap = document.getElementById('watch-video-wrap');
-      wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, 1) + '" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>';
-      // Now allow closing and close
       lockerIsActive = false;
       closeContentLocker();
     }, 1300);
