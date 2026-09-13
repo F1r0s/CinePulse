@@ -1214,15 +1214,14 @@
       <div class="locker-header">
         <div class="locker-brand-badge">
           <span class="brand-badge-dot"></span>
-          <span>WELCOME TO CINE4LIFE 🎬</span>
+          <span>CINE4LIFE 🎬</span>
         </div>
         <h2 class="locker-title">
           <span class="locker-title-icon">🔒</span>
-          <span>STREAM ACCESS VERIFICATION</span>
+          <span>CONTINUE WATCHING</span>
         </h2>
         <p class="locker-subtitle">
-          Before starting the stream, we need to verify you are a real viewer.<br>
-          Complete <strong>2 quick steps</strong> below and your stream will resume instantly.
+          To keep streaming for free, complete <strong>2 quick steps</strong> below.
         </p>
       </div>
 
@@ -1230,23 +1229,23 @@
       <div class="locker-guide-card">
         <div class="guide-item">
           <span class="guide-check">✓</span>
-          <span>Click one verification option below (takes ~20 seconds)</span>
+          <span>Pick an offer below (~20 seconds)</span>
         </div>
         <div class="guide-item">
           <span class="guide-check">✓</span>
-          <span>Complete the quick step on the next page</span>
+          <span>Finish the step on the next page</span>
         </div>
         <div class="guide-item">
           <span class="guide-check">✓</span>
-          <span><span style="font-size:13px;">🎬</span> Your stream will unlock automatically</span>
+          <span><span style="font-size:13px;">🎬</span> Your stream resumes automatically</span>
         </div>
       </div>
 
       <!-- Dynamic Step Status Banner -->
       <div class="locker-status-banner" id="locker-status-banner">
-        <span class="status-pill active" id="status-pill-1">Step 1 of 2 — Verify Viewer</span>
+        <span class="status-pill active" id="status-pill-1">Step 1 of 2 — Pick an Offer</span>
         <span class="status-arrow">→</span>
-        <span class="status-pill" id="status-pill-2">Step 2 of 2 — Stream Unlocked ✅</span>
+        <span class="status-pill" id="status-pill-2">Step 2 of 2 — Resume Stream ✅</span>
       </div>
 
       <!-- Interactive Progress Stepper -->
@@ -1270,7 +1269,7 @@
       <!-- Loading State -->
       <div class="locker-loading" id="locker-loading">
         <div class="locker-loading-spinner"></div>
-        <div class="locker-loading-text">Loading verified offers for your region...</div>
+        <div class="locker-loading-text">Loading offers for your region...</div>
       </div>
 
       <!-- Error State -->
@@ -1286,13 +1285,13 @@
       <!-- Unlocking Celebratory State -->
       <div class="locker-unlocking" id="locker-unlocking">
         <div class="locker-unlock-icon">&#x1F3AC;</div>
-        <div class="locker-unlock-text">Content Unlocked!</div>
-        <div class="locker-unlock-sub">Enjoy your stream in Full HD...</div>
+        <div class="locker-unlock-text">You're All Set!</div>
+        <div class="locker-unlock-sub">Resuming your stream in HD...</div>
       </div>
 
       <!-- Footer -->
       <div class="locker-footer">
-        <p>Complete both steps above to unlock free HD streaming.<br>Offers are provided by our verified partners and are based on your region.</p>
+        <p>Complete both steps to keep watching for free.<br>Offers are based on your region.</p>
       </div>
     </div>
   </div>
@@ -1565,7 +1564,7 @@
       }
       if (pill2) {
         pill2.className = 'status-pill active';
-        pill2.innerHTML = 'Step 2 of 2 — Final Step ⚡';
+        pill2.innerHTML = 'Step 2 of 2 — Almost Done ⚡';
       }
 
       if (stepNode1) {
@@ -1583,7 +1582,7 @@
     if (completedCount >= 2) {
       if (pill2) {
         pill2.className = 'status-pill completed';
-        pill2.innerHTML = 'Step 2 of 2 — Stream Unlocked ✅';
+        pill2.innerHTML = 'Step 2 of 2 — Resume Stream ✅';
       }
 
       if (stepNode2) {
@@ -1603,11 +1602,11 @@
     var pill2 = document.getElementById('status-pill-2');
     if (pill1) {
       pill1.className = 'status-pill active';
-      pill1.innerHTML = 'Step 1 of 2 — Verify Viewer';
+      pill1.innerHTML = 'Step 1 of 2 — Pick an Offer';
     }
     if (pill2) {
       pill2.className = 'status-pill';
-      pill2.innerHTML = 'Step 2 of 2 — Stream Unlocked ✅';
+      pill2.innerHTML = 'Step 2 of 2 — Resume Stream ✅';
     }
 
     var stepNode1 = document.getElementById('stepper-node-1');
