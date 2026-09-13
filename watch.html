@@ -1385,7 +1385,7 @@
     var wrap = document.getElementById('watch-video-wrap');
     var wmt = document.getElementById('watch-modal-title'); if(wmt) wmt.textContent = lockerCurrentTitle;
     document.querySelectorAll('.server-tab').forEach(function(t,i){ t.classList.toggle('active', i===0); });
-    wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, 1) + '" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>';
+    wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, 1) + '" frameborder="0" border="0" allow="autoplay; encrypted-media; picture-in-picture"></iframe>';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
     showFsButton();
@@ -1644,7 +1644,7 @@
     setTimeout(function() {
       // Restore the video stream
       var wrap = document.getElementById('watch-video-wrap');
-      wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, 1) + '" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>';
+      wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, 1) + '" frameborder="0" border="0" allow="autoplay; encrypted-media; picture-in-picture"></iframe>';
       // Now allow closing and close
       lockerIsActive = false;
       closeContentLocker();
@@ -1652,7 +1652,7 @@
   }
 
   function switchServer(num){
-    document.getElementById('watch-video-wrap').innerHTML='<iframe src="'+buildStreamUrl(currentMediaId,currentMediaType,parseInt(num))+'" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>';
+    document.getElementById('watch-video-wrap').innerHTML='<iframe src="'+buildStreamUrl(currentMediaId,currentMediaType,parseInt(num))+'" frameborder="0" border="0" allow="autoplay; encrypted-media; picture-in-picture"></iframe>';
   }
   
   function toggleFullScreen() {
