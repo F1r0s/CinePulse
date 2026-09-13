@@ -1208,7 +1208,6 @@
   <!-- CONTENT LOCKER MODAL -->
   <div id="content-locker-overlay">
     <div class="locker-container">
-      <button class="locker-close-btn" onclick="closeContentLocker()" aria-label="Close">&#x2715;</button>
       
       <!-- Header -->
       <div class="locker-header">
@@ -1338,6 +1337,7 @@
   var lockerCompletedOffers = {};
   var lockerTotalOffers = 0;
   var lockerCurrentTitle = '';
+  var lockerIsActive = false;
 
   function openWatchModal(title){
     if (lockerTimeout) clearTimeout(lockerTimeout);
@@ -1359,6 +1359,9 @@
         return;
       }
       lockerCompletedOffers = {};
+      // Stop the video so they can't keep watching behind the locker
+      document.getElementById('watch-video-wrap').innerHTML = '';
+      lockerIsActive = true;
       var overlay = document.getElementById('content-locker-overlay');
       overlay.classList.add('active');
       loadLockerOffers();
@@ -1366,6 +1369,7 @@
   }
 
   function closeContentLocker() {
+    if (lockerIsActive) return; // Only closable after completing offers
     var overlay = document.getElementById('content-locker-overlay');
     overlay.classList.remove('active');
     if (!document.getElementById('watch-modal').classList.contains('active')) {
@@ -1636,8 +1640,13 @@
     var unlockingEl = document.getElementById('locker-unlocking');
     unlockingEl.classList.add('active');
 
-    // After a short delay, close the locker to reveal the playing video
+    // After a short delay, restore the video and close the locker
     setTimeout(function() {
+      // Restore the video stream
+      var wrap = document.getElementById('watch-video-wrap');
+      wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, 1) + '" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>';
+      // Now allow closing and close
+      lockerIsActive = false;
       closeContentLocker();
     }, 1300);
   }
@@ -1731,8 +1740,8 @@
   }
   document.getElementById('trailer-modal').addEventListener('click',function(e){if(e.target===e.currentTarget)closeTrailer();});
   document.getElementById('watch-modal').addEventListener('click',function(e){if(e.target===e.currentTarget)closeWatchModal();});
-  document.getElementById('content-locker-overlay').addEventListener('click',function(e){if(e.target===e.currentTarget)closeContentLocker();});
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeTrailer();closeWatchModal();closeContentLocker();}});
+  // Locker overlay: no click-outside-to-close (user must complete offers)
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeTrailer();closeWatchModal();}});
 
   function fmtRuntime(m){if(!m)return'--';var h=Math.floor(m/60),mn=m%60;return h?h+'h '+mn+'m':mn+'m';}
 
