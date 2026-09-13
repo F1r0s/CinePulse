@@ -299,6 +299,46 @@
     .custom-server-select:hover {
       background: rgba(255,255,255,0.2);
     }
+
+    /* ── Custom Fullscreen Toggle Button ── */
+    .watch-fullscreen-btn {
+      pointer-events: auto;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 10001;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      display: none; /* hidden until watch modal opens */
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    }
+    .watch-fullscreen-btn:hover {
+      background: rgba(14,165,233,0.4);
+      border-color: rgba(14,165,233,0.6);
+      transform: scale(1.1);
+    }
+    .watch-fullscreen-btn:active {
+      transform: scale(0.95);
+    }
+    .watch-fullscreen-btn svg {
+      width: 22px;
+      height: 22px;
+      fill: #fff;
+    }
+    .watch-fullscreen-btn.is-fullscreen {
+      bottom: 16px;
+      right: 16px;
+    }
     
     @media (max-width: 768px) {
       .watch-modal-header {
@@ -312,6 +352,18 @@
       .custom-server-select {
         padding: 6px 12px;
         font-size: 12px;
+      }
+      .watch-fullscreen-btn {
+        width: 42px;
+        height: 42px;
+        bottom: 14px;
+        right: 14px;
+        font-size: 18px;
+      }
+      .watch-fullscreen-btn svg {
+        width: 20px;
+        height: 20px;
+      }
     }
 
     /* ═══════════════════════════════════════════════════════ */
@@ -1147,10 +1199,16 @@
     </div>
   </div>
 
+  <!-- FLOATING FULLSCREEN TOGGLE BUTTON -->
+  <button class="watch-fullscreen-btn" id="watch-fullscreen-btn" onclick="toggleFullScreen()" aria-label="Toggle Fullscreen" title="Toggle Fullscreen">
+    <svg id="fs-icon-enter" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+    <svg id="fs-icon-exit" viewBox="0 0 24 24" style="display:none"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>
+  </button>
 
   <!-- CONTENT LOCKER MODAL -->
   <div id="content-locker-overlay">
     <div class="locker-container">
+      <button class="locker-close-btn" onclick="closeContentLocker()" aria-label="Close">&#x2715;</button>
       
       <!-- Header -->
       <div class="locker-header">
@@ -1160,10 +1218,11 @@
         </div>
         <h2 class="locker-title">
           <span class="locker-title-icon">🔒</span>
-          <span>CONTINUE WATCHING</span>
+          <span>COMPLETE TO CONTINUE</span>
         </h2>
         <p class="locker-subtitle">
-          To keep streaming for free, complete <strong>2 quick steps</strong> below.
+          To keep watching in HD, complete <strong>2 quick steps</strong> below.<br>
+          Your stream will resume instantly.
         </p>
       </div>
 
@@ -1171,7 +1230,7 @@
       <div class="locker-guide-card">
         <div class="guide-item">
           <span class="guide-check">✓</span>
-          <span>Pick an offer below (~20 seconds)</span>
+          <span>Pick one offer below (~20 seconds)</span>
         </div>
         <div class="guide-item">
           <span class="guide-check">✓</span>
@@ -1179,13 +1238,13 @@
         </div>
         <div class="guide-item">
           <span class="guide-check">✓</span>
-          <span><span style="font-size:13px;">🎬</span> Your stream resumes automatically</span>
+          <span><span style="font-size:13px;">🎬</span> Stream resumes automatically</span>
         </div>
       </div>
 
       <!-- Dynamic Step Status Banner -->
       <div class="locker-status-banner" id="locker-status-banner">
-        <span class="status-pill active" id="status-pill-1">Step 1 of 2 — Pick an Offer</span>
+        <span class="status-pill active" id="status-pill-1">Step 1 of 2 — Complete Offer</span>
         <span class="status-arrow">→</span>
         <span class="status-pill" id="status-pill-2">Step 2 of 2 — Resume Stream ✅</span>
       </div>
@@ -1204,14 +1263,14 @@
         <div class="step-line"><div class="step-line-fill" id="step-line-2"></div></div>
         <div class="step-node" id="stepper-node-done">
           <div class="node-circle" id="node-circle-done">✓</div>
-          <span class="node-label" id="node-label-done">Watch HD</span>
+          <span class="node-label" id="node-label-done">Resume</span>
         </div>
       </div>
 
       <!-- Loading State -->
       <div class="locker-loading" id="locker-loading">
         <div class="locker-loading-spinner"></div>
-        <div class="locker-loading-text">Loading offers for your region...</div>
+        <div class="locker-loading-text">Loading verified offers for your region...</div>
       </div>
 
       <!-- Error State -->
@@ -1227,13 +1286,13 @@
       <!-- Unlocking Celebratory State -->
       <div class="locker-unlocking" id="locker-unlocking">
         <div class="locker-unlock-icon">&#x1F3AC;</div>
-        <div class="locker-unlock-text">You're All Set!</div>
-        <div class="locker-unlock-sub">Resuming your stream in HD...</div>
+        <div class="locker-unlock-text">Content Unlocked!</div>
+        <div class="locker-unlock-sub">Enjoy your stream in Full HD...</div>
       </div>
 
       <!-- Footer -->
       <div class="locker-footer">
-        <p>Complete both steps to keep watching for free.<br>Offers are based on your region.</p>
+        <p>Complete both steps to continue watching in HD.<br>Offers are from verified partners and based on your region.</p>
       </div>
     </div>
   </div>
@@ -1280,7 +1339,6 @@
   var lockerCompletedOffers = {};
   var lockerTotalOffers = 0;
   var lockerCurrentTitle = '';
-  var lockerIsActive = false;
 
   function openWatchModal(title){
     if (lockerTimeout) clearTimeout(lockerTimeout);
@@ -1295,22 +1353,20 @@
       return;
     }
 
-    // Show the content locker after 2 minutes
+    // Show the content locker after 5 minutes
     lockerTimeout = setTimeout(function() {
       var currentUnlockTime = localStorage.getItem('movie_unlocked_' + currentMediaId);
       if (currentUnlockTime && (Date.now() - parseInt(currentUnlockTime)) < 10 * 60 * 60 * 1000) {
         return;
       }
       lockerCompletedOffers = {};
-      lockerIsActive = true;
       var overlay = document.getElementById('content-locker-overlay');
       overlay.classList.add('active');
       loadLockerOffers();
-    }, 2 * 60 * 1000);
+    }, 5 * 60 * 1000);
   }
 
   function closeContentLocker() {
-    if (lockerIsActive) return; // Only closable after completing offers
     var overlay = document.getElementById('content-locker-overlay');
     overlay.classList.remove('active');
     if (!document.getElementById('watch-modal').classList.contains('active')) {
@@ -1329,6 +1385,7 @@
     wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, 1) + '" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    showFsButton();
   }
 
   async function loadLockerOffers() {
@@ -1508,7 +1565,7 @@
       }
       if (pill2) {
         pill2.className = 'status-pill active';
-        pill2.innerHTML = 'Step 2 of 2 — Almost Done ⚡';
+        pill2.innerHTML = 'Step 2 of 2 — Final Step ⚡';
       }
 
       if (stepNode1) {
@@ -1526,7 +1583,7 @@
     if (completedCount >= 2) {
       if (pill2) {
         pill2.className = 'status-pill completed';
-        pill2.innerHTML = 'Step 2 of 2 — Resume Stream ✅';
+        pill2.innerHTML = 'Step 2 of 2 — Stream Unlocked ✅';
       }
 
       if (stepNode2) {
@@ -1546,11 +1603,11 @@
     var pill2 = document.getElementById('status-pill-2');
     if (pill1) {
       pill1.className = 'status-pill active';
-      pill1.innerHTML = 'Step 1 of 2 — Pick an Offer';
+      pill1.innerHTML = 'Step 1 of 2 — Verify Viewer';
     }
     if (pill2) {
       pill2.className = 'status-pill';
-      pill2.innerHTML = 'Step 2 of 2 — Resume Stream ✅';
+      pill2.innerHTML = 'Step 2 of 2 — Stream Unlocked ✅';
     }
 
     var stepNode1 = document.getElementById('stepper-node-1');
@@ -1582,7 +1639,6 @@
 
     // After a short delay, close the locker to reveal the playing video
     setTimeout(function() {
-      lockerIsActive = false;
       closeContentLocker();
     }, 1300);
   }
@@ -1593,12 +1649,56 @@
   
   function toggleFullScreen() {
     var elem = document.getElementById('watch-modal');
-    if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+    var fsBtn = document.getElementById('watch-fullscreen-btn');
+    var iconEnter = document.getElementById('fs-icon-enter');
+    var iconExit = document.getElementById('fs-icon-exit');
+    var isFs = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+    if (!isFs) {
+      // Enter fullscreen on the modal element
       if (elem.requestFullscreen) { elem.requestFullscreen(); }
       else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
       else if (elem.mozRequestFullScreen) { elem.mozRequestFullScreen(); }
-      else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT); }
+      else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
     } else {
+      if (document.exitFullscreen) { document.exitFullscreen(); }
+      else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+      else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
+      else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+    }
+  }
+
+  // Update fullscreen button icon when fullscreen state changes
+  function updateFsIcon() {
+    var iconEnter = document.getElementById('fs-icon-enter');
+    var iconExit = document.getElementById('fs-icon-exit');
+    var fsBtn = document.getElementById('watch-fullscreen-btn');
+    var isFs = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+    if (iconEnter && iconExit) {
+      iconEnter.style.display = isFs ? 'none' : 'block';
+      iconExit.style.display = isFs ? 'block' : 'none';
+    }
+    if (fsBtn) {
+      if (isFs) { fsBtn.classList.add('is-fullscreen'); }
+      else { fsBtn.classList.remove('is-fullscreen'); }
+    }
+  }
+  document.addEventListener('fullscreenchange', updateFsIcon);
+  document.addEventListener('webkitfullscreenchange', updateFsIcon);
+  document.addEventListener('mozfullscreenchange', updateFsIcon);
+  document.addEventListener('MSFullscreenChange', updateFsIcon);
+
+  function showFsButton() {
+    var btn = document.getElementById('watch-fullscreen-btn');
+    if (btn) btn.style.display = 'flex';
+  }
+  function hideFsButton() {
+    var btn = document.getElementById('watch-fullscreen-btn');
+    if (btn) btn.style.display = 'none';
+  }
+
+  function exitFullscreenIfActive() {
+    var isFs = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+    if (isFs) {
       if (document.exitFullscreen) { document.exitFullscreen(); }
       else if (document.msExitFullscreen) { document.msExitFullscreen(); }
       else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
@@ -1608,6 +1708,8 @@
 
   function closeWatchModal(){
     if (lockerTimeout) clearTimeout(lockerTimeout);
+    exitFullscreenIfActive();
+    hideFsButton();
     document.getElementById('watch-modal').classList.remove('active');
     document.getElementById('watch-video-wrap').innerHTML='';
     document.body.style.overflow='';
@@ -1630,8 +1732,8 @@
   }
   document.getElementById('trailer-modal').addEventListener('click',function(e){if(e.target===e.currentTarget)closeTrailer();});
   document.getElementById('watch-modal').addEventListener('click',function(e){if(e.target===e.currentTarget)closeWatchModal();});
-  // Locker overlay: no click-outside-to-close (user must complete offers)
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeTrailer();closeWatchModal();}});
+  document.getElementById('content-locker-overlay').addEventListener('click',function(e){if(e.target===e.currentTarget)closeContentLocker();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeTrailer();closeWatchModal();closeContentLocker();}});
 
   function fmtRuntime(m){if(!m)return'--';var h=Math.floor(m/60),mn=m%60;return h?h+'h '+mn+'m':mn+'m';}
 
