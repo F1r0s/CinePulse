@@ -1188,19 +1188,24 @@
       <div class="watch-modal-header">
         <button class="watch-close-btn" onclick="closeWatchModal()" aria-label="Go Back" title="Go Back">&#8592;</button>
         <div class="watch-header-controls">
+          <span class="server-reminder" style="color:#cbd5e1;font-size:12px;font-weight:500;background:rgba(0,0,0,0.65);padding:6px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);backdrop-filter:blur(6px);">If server is not working, please change it &rarr;</span>
           <select class="custom-server-select" onchange="switchServer(this.value)">
-            <option value="1">Server 1 (Main)</option>
-            <option value="2">Server 2 (Alt)</option>
-            <option value="3">Server 3 (Backup)</option>
+            <option value="1">&#x26A1; Server 1 (VidLink)</option>
+            <option value="2">&#x1F310; Server 2 (AutoEmbed)</option>
+            <option value="3">&#x1F504; Server 3 (SuperEmbed)</option>
+            <option value="4">&#x1F4FA; Server 4 (2Embed)</option>
+            <option value="5">&#x2728; Server 5 (VidSrc)</option>
           </select>
         </div>
       </div>
       <div class="watch-video-wrap" id="watch-video-wrap"></div>
 
       <div class="server-tabs">
-        <button class="server-tab active" onclick="switchServer(1,this)">&#x26A1; Server 1</button>
-        <button class="server-tab" onclick="switchServer(2,this)">&#x1F310; Server 2</button>
-        <button class="server-tab" onclick="switchServer(3,this)">&#x1F504; Server 3</button>
+        <button class="server-tab active" onclick="switchServer(1,this)">&#x26A1; Server 1 (VidLink)</button>
+        <button class="server-tab" onclick="switchServer(2,this)">&#x1F310; Server 2 (AutoEmbed)</button>
+        <button class="server-tab" onclick="switchServer(3,this)">&#x1F504; Server 3 (SuperEmbed)</button>
+        <button class="server-tab" onclick="switchServer(4,this)">&#x1F4FA; Server 4 (2Embed)</button>
+        <button class="server-tab" onclick="switchServer(5,this)">&#x2728; Server 5 (VidSrc)</button>
       </div>
     </div>
   </div>
@@ -1220,7 +1225,7 @@
           <span>COMPLETE TO CONTINUE</span>
         </h2>
         <p class="locker-subtitle">
-          To keep watching in HD, complete <strong>2 quick steps</strong> below.<br>
+          To keep watching the stream, complete <strong>2 quick steps</strong> below.<br>
           Your stream will resume instantly.
         </p>
       </div>
@@ -1291,7 +1296,7 @@
 
       <!-- Footer -->
       <div class="locker-footer">
-        <p>Complete both steps to continue watching in HD.<br>Offers are from verified partners and based on your region.</p>
+        <p>Complete both steps to continue watching the stream.<br>Offers are from verified partners and based on your region.</p>
       </div>
     </div>
   </div>
@@ -1322,15 +1327,37 @@
   var currentMediaId=null,currentMediaType='movie',currentTrailerKey=null,lockerTimeout=null;
   var p=new URLSearchParams(location.search);
   currentMediaId=p.get('id');currentMediaType=p.get('type')||'movie';
+  var currentSeason = parseInt(p.get('season') || p.get('s') || '1', 10);
+  var currentEpisode = parseInt(p.get('episode') || p.get('e') || '1', 10);
+  if (isNaN(currentSeason) || currentSeason < 1) currentSeason = 1;
+  if (isNaN(currentEpisode) || currentEpisode < 1) currentEpisode = 1;
   window.currentMediaId = currentMediaId;
   window.currentMediaType = currentMediaType;
+  window.currentSeason = currentSeason;
+  window.currentEpisode = currentEpisode;
+  window.activeServerNum = 1;
 
-  function buildStreamUrl(id,type,srv){
+  function buildStreamUrl(id,type,srv,s,e){
+    var season = s || window.currentSeason || 1;
+    var episode = e || window.currentEpisode || 1;
     var c='0ea5e9';
-    var m=['https://player.videasy.net/movie/'+id+'?color='+c,'https://vidsrc.xyz/embed/movie/'+id,'https://embed.su/embed/movie/'+id];
-    var t=['https://player.videasy.net/tv/'+id+'/1/1?color='+c,'https://vidsrc.xyz/embed/tv/'+id,'https://embed.su/embed/tv/'+id];
+    var m=[
+      'https://vidlink.pro/movie/'+id+'?primaryColor='+c+'&secondaryColor=1e293b&iconColor='+c+'&autoplay=false',
+      'https://autoembed.co/movie/tmdb/'+id,
+      'https://multiembed.mov/?video_id='+id+'&tmdb=1',
+      'https://www.2embed.cc/embed/'+id,
+      'https://vidsrc.to/embed/movie/'+id
+    ];
+    var t=[
+      'https://vidlink.pro/tv/'+id+'/'+season+'/'+episode+'?primaryColor='+c+'&secondaryColor=1e293b&iconColor='+c+'&autoplay=false',
+      'https://autoembed.co/tv/tmdb/'+id+'-'+season+'-'+episode,
+      'https://multiembed.mov/?video_id='+id+'&tmdb=1&s='+season+'&e='+episode,
+      'https://www.2embed.cc/embedtv/'+id+'&s='+season+'&e='+episode,
+      'https://vidsrc.to/embed/tv/'+id+'/'+season+'/'+episode
+    ];
     var list=type==='tv'?t:m;
-    return list[Math.min((srv||1)-1,list.length-1)];
+    var idx = Math.max(0, Math.min((srv||1)-1, list.length-1));
+    return list[idx];
   }
   window.buildStreamUrl = buildStreamUrl;
   
@@ -1382,12 +1409,10 @@
     closeContentLocker();
     // Now open the real video player
     var modal = document.getElementById('watch-modal');
-    var wrap = document.getElementById('watch-video-wrap');
     var wmt = document.getElementById('watch-modal-title'); if(wmt) wmt.textContent = lockerCurrentTitle;
-    document.querySelectorAll('.server-tab').forEach(function(t,i){ t.classList.toggle('active', i===0); });
-    wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, 1) + '" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    switchServer(window.activeServerNum || 1);
   }
 
   async function loadLockerOffers() {
@@ -1647,9 +1672,17 @@
     }, 1300);
   }
 
-  function switchServer(num){
-    window.activeServerNum = parseInt(num);
-    document.getElementById('watch-video-wrap').innerHTML='<iframe src="'+buildStreamUrl(currentMediaId,currentMediaType,window.activeServerNum)+'" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>';
+  function switchServer(num, btn){
+    window.activeServerNum = parseInt(num) || 1;
+    var sel = document.querySelector('.custom-server-select');
+    if (sel && sel.value !== String(window.activeServerNum)) sel.value = String(window.activeServerNum);
+    document.querySelectorAll('.server-tab').forEach(function(t, i){
+      t.classList.toggle('active', (i + 1) === window.activeServerNum);
+    });
+    var wrap = document.getElementById('watch-video-wrap');
+    if (wrap) {
+      wrap.innerHTML = '<iframe src="' + buildStreamUrl(currentMediaId, currentMediaType, window.activeServerNum) + '" frameborder="0" border="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" referrerpolicy="origin"></iframe>';
+    }
   }
   
   function closeWatchModal(){
