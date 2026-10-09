@@ -3,5 +3,13 @@
   "version": "1.0.0",
   "engines": {
     "node": ">=18"
+  },
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "node -e \"console.log('Build successful')\""
+  },
+  "dependencies": {
+    "express": "^5.2.1"
   }
 }

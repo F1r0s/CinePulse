@@ -10,7 +10,7 @@ module.exports = async (req, res) => {
   }
 
   // ── Configuration ──
-  const API_KEY = '47558|DluqLUTirEcifKUEHLp0wrBpqTebJR7XbTqwtkL666b7e813';
+  const API_KEY = process.env.OGADS_API_KEY || '47558|DluqLUTirEcifKUEHLp0wrBpqTebJR7XbTqwtkL666b7e813';
   const API_ENDPOINT = 'https://lockerpreview.com/api/v2';
   const MAX_OFFERS = 50; // Query full pool to find highest payout offers
   const RETURN_OFFERS = 2; // Return top 2 offers to frontend

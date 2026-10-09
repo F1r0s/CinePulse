@@ -475,13 +475,13 @@ const TRANSLATIONS = {
     'load-more-movies': 'Load More Movies',
     'load-more-tv': 'Load More TV Shows',
     // Footer
-    'footer-brand-desc': 'CinePulse is your ultimate destination for streaming movies and TV shows. We provide links to high-quality content from various sources.',
+    'footer-brand-desc': 'Cine4Life is your ultimate destination for streaming movies and TV shows. We provide links to high-quality content from various sources.',
     'footer-quick-links': 'Quick Links',
     'footer-movies': 'Movies',
     'footer-tv': 'TV Shows',
     'footer-legal': 'Legal',
     'footer-disclaimer': 'This site does not store any files on our server, we only link to the media which is hosted on 3rd party services.',
-    'footer-rights': '© 2026 CinePulse. All rights reserved.',
+    'footer-rights': '© 2026 Cine4Life. All rights reserved.',
     // Movie detail badges
     'badge-hd': 'HD',
     // Watch button
@@ -525,13 +525,13 @@ const TRANSLATIONS = {
     'load-more-movies': 'Plus de Films',
     'load-more-tv': 'Plus de Séries',
     // Footer
-    'footer-brand-desc': 'CinePulse est votre destination idéale pour le streaming de films et séries. Nous proposons des liens vers du contenu de qualité provenant de diverses sources.',
+    'footer-brand-desc': 'Cine4Life est votre destination idéale pour le streaming de films et séries. Nous proposons des liens vers du contenu de qualité provenant de diverses sources.',
     'footer-quick-links': 'Liens Rapides',
     'footer-movies': 'Films',
     'footer-tv': 'Séries TV',
     'footer-legal': 'Légal',
     'footer-disclaimer': 'Ce site ne stocke aucun fichier sur nos serveurs, nous ne faisons que créer des liens vers des médias hébergés par des services tiers.',
-    'footer-rights': '© 2026 CinePulse. Tous droits réservés.',
+    'footer-rights': '© 2026 Cine4Life. Tous droits réservés.',
     // Movie detail badges
     'badge-hd': 'HD',
     // Watch button

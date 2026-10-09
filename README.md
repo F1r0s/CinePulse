@@ -1,8 +1,8 @@
-![CinePulse Logo](og-image.jpg)
+![Cine4Life Logo](og-image.jpg)
 
-# CinePulse 🎬
+# Cine4Life 🎬
 
-**CinePulse** is a premium, ad-free streaming platform that brings the magic of cinema directly to your screen. Built with a focus on speed, simplicity, and a superior user experience, CinePulse offers thousands of movies and TV shows completely free of charge.
+**Cine4Life** is a premium, ad-free streaming platform that brings the magic of cinema directly to your screen. Built with a focus on speed, simplicity, and a superior user experience, Cine4Life offers thousands of movies and TV shows completely free of charge.
 
 ## ✨ Key Features
 
